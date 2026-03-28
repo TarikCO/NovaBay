@@ -1,13 +1,15 @@
-import MapView from './components/Map/MapView'
+import { BrowserRouter, Route, Routes } from 'react-router-dom'
+import Home from './pages/Home'
+import Analyze from './pages/Analyze'
 
 function App() {
   return (
-    <div className="app-layout">
-      <aside className="sidebar" />
-      <main className="map-panel">
-        <MapView />
-      </main>
-    </div>
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/analyze" element={<Analyze />} />
+      </Routes>
+    </BrowserRouter>
   )
 }
 

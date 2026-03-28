@@ -28,15 +28,15 @@
   position: absolute;
   inset: 0;
   border-radius: 50%;
-  background: radial-gradient(circle at 35% 35%, #ffd8b2, #ff5a2a 70%);
-  box-shadow: 0 0 0 2px rgba(255, 90, 42, 0.35);
+  background: radial-gradient(circle at 35% 35%, #ffd8b2, var(--color-accent) 70%);
+  box-shadow: 0 0 0 2px rgba(249, 115, 22, 0.35);
 }
 
 .map-marker-pulse {
   position: absolute;
   inset: -8px;
   border-radius: 50%;
-  border: 2px solid rgba(255, 116, 77, 0.55);
+  border: 2px solid rgba(255, 141, 73, 0.55);
   animation: marker-pulse 1.6s ease-out infinite;
 }
 
