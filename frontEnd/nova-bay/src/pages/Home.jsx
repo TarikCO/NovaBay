@@ -1,5 +1,6 @@
 import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
+import HeroMap from '../components/Map/HeroMap'
 import './Home.css'
 
 function Home() {
@@ -27,27 +28,15 @@ function Home() {
   return (
     <div className="home-page">
       <section className="home-hero">
-        <div className="hero-glow hero-glow-purple" aria-hidden="true" />
-        <div className="hero-glow hero-glow-blue" aria-hidden="true" />
-        <div className="hero-grid" aria-hidden="true" />
-
-        <div className="particle p1" aria-hidden="true" />
-        <div className="particle p2" aria-hidden="true" />
-        <div className="particle p3" aria-hidden="true" />
-        <div className="particle p4" aria-hidden="true" />
-        <div className="particle p5" aria-hidden="true" />
-        <div className="particle p6" aria-hidden="true" />
-        <div className="particle p7" aria-hidden="true" />
-        <div className="particle p8" aria-hidden="true" />
-        <div className="particle p9" aria-hidden="true" />
-        <div className="particle p10" aria-hidden="true" />
-        <div className="particle p11" aria-hidden="true" />
-        <div className="particle p12" aria-hidden="true" />
+        <div className="hero-map-bg" aria-hidden="true">
+          <HeroMap />
+        </div>
+        <div className="hero-overlay" aria-hidden="true" />
 
         <div className="hero-content">
           <h1>
             Build smarter. Build{' '}
-            <span className="gradient-text">safer.</span>
+            <span className="accent-text">safer.</span>
           </h1>
           <p>
             NovaBay analyzes flood risk, GIS data, and building materials to help
@@ -63,22 +52,6 @@ function Home() {
           </button>
         </div>
 
-        <div className="hero-waves" aria-hidden="true">
-          <svg viewBox="0 0 1440 220" preserveAspectRatio="none">
-            <path
-              className="wave wave-1"
-              d="M0,80 C180,140 360,0 540,80 C720,160 900,20 1080,80 C1260,140 1440,60 1440,60 L1440,220 L0,220 Z"
-            />
-            <path
-              className="wave wave-2"
-              d="M0,110 C200,60 400,160 600,110 C800,60 1000,150 1200,110 C1350,80 1440,120 1440,120 L1440,220 L0,220 Z"
-            />
-            <path
-              className="wave wave-3"
-              d="M0,140 C240,100 480,180 720,140 C960,100 1200,160 1440,140 L1440,220 L0,220 Z"
-            />
-          </svg>
-        </div>
       </section>
 
       <section className="stats-strip">

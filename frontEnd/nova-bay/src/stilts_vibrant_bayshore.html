@@ -1,0 +1,514 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { background: #0a1628; overflow: hidden; }
+canvas { display: block; }
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<script>
+const canvas = document.getElementById('c');
+const ctx = canvas.getContext('2d');
+canvas.width = 680;
+canvas.height = 420;
+const W = 680, H = 420;
+
+let t = 0;
+
+function drawScene() {
+  ctx.clearRect(0, 0, W, H);
+
+  // SKY — vivid gradient
+  const sky = ctx.createLinearGradient(0, 0, 0, H * 0.55);
+  sky.addColorStop(0, '#0a1f4e');
+  sky.addColorStop(0.3, '#1a3a7a');
+  sky.addColorStop(0.6, '#1e6090');
+  sky.addColorStop(0.85, '#2aabbb');
+  sky.addColorStop(1, '#3dd8c8');
+  ctx.fillStyle = sky;
+  ctx.fillRect(0, 0, W, H * 0.58);
+
+  // SUN/MOON GLOW on horizon
+  const sunGlow = ctx.createRadialGradient(W*0.62, H*0.38, 0, W*0.62, H*0.38, 160);
+  sunGlow.addColorStop(0, 'rgba(255,230,80,0.55)');
+  sunGlow.addColorStop(0.3, 'rgba(255,160,40,0.3)');
+  sunGlow.addColorStop(0.6, 'rgba(255,100,30,0.12)');
+  sunGlow.addColorStop(1, 'rgba(0,0,0,0)');
+  ctx.fillStyle = sunGlow;
+  ctx.fillRect(0, 0, W, H * 0.58);
+
+  // SUN DISC
+  const sunX = W*0.62, sunY = H*0.36;
+  const sunDisc = ctx.createRadialGradient(sunX, sunY, 0, sunX, sunY, 28);
+  sunDisc.addColorStop(0, '#fff8c0');
+  sunDisc.addColorStop(0.4, '#ffe566');
+  sunDisc.addColorStop(0.7, '#ffb830');
+  sunDisc.addColorStop(1, 'rgba(255,160,40,0)');
+  ctx.fillStyle = sunDisc;
+  ctx.beginPath();
+  ctx.arc(sunX, sunY, 28, 0, Math.PI * 2);
+  ctx.fill();
+
+  // STARS
+  const stars = [[80,28],[140,18],[220,35],[290,12],[370,22],[440,8],[510,30],[575,16],[630,38],[50,45],[165,52],[330,48],[480,42],[610,25]];
+  stars.forEach(([x,y]) => {
+    const pulse = 0.5 + 0.5 * Math.sin(t * 0.8 + x);
+    ctx.beginPath();
+    ctx.arc(x, y, 1.2, 0, Math.PI*2);
+    ctx.fillStyle = `rgba(220,240,255,${0.3 * pulse + 0.2})`;
+    ctx.fill();
+  });
+
+  drawClouds();
+  drawDistantLand();
+  drawOcean();
+  drawBeach();
+  drawFoam();
+  drawCityGlow();
+  drawPalmTrees();
+  drawUI();
+}
+
+function drawClouds() {
+  // BIG CLOUD LEFT — multi-layered
+  const clouds = [
+    { x: 60 + Math.sin(t*0.04)*8, y: 68, scale: 1.2, color: ['#4a7ab8','#5a8fc8','#6aaad8','#7dc8e8','#9addf0'] },
+    { x: 420 + Math.sin(t*0.03+1)*6, y: 48, scale: 0.85, color: ['#3a6aaa','#4a80c0','#5a9ad0','#70b8e0','#88d0ee'] },
+    { x: 240 + Math.sin(t*0.05+2)*5, y: 78, scale: 0.6, color: ['#4a78b5','#5a90c8','#6aaad5','#80c0e5','#95d5f0'] },
+  ];
+
+  clouds.forEach(cloud => {
+    const {x, y, scale, color} = cloud;
+    // shadow puff (darkest, bottom)
+    drawPuff(x, y + 18*scale, 55*scale, 28*scale, color[0], 0.9);
+    drawPuff(x + 45*scale, y + 22*scale, 48*scale, 24*scale, color[0], 0.9);
+    drawPuff(x - 30*scale, y + 20*scale, 40*scale, 22*scale, color[0], 0.85);
+    // mid layer
+    drawPuff(x + 10*scale, y + 8*scale, 60*scale, 32*scale, color[1], 0.9);
+    drawPuff(x + 55*scale, y + 10*scale, 52*scale, 28*scale, color[1], 0.88);
+    drawPuff(x - 20*scale, y + 12*scale, 44*scale, 25*scale, color[1], 0.85);
+    // bright mid
+    drawPuff(x + 18*scale, y - 2*scale, 58*scale, 30*scale, color[2], 0.88);
+    drawPuff(x + 62*scale, y + 2*scale, 48*scale, 26*scale, color[2], 0.85);
+    // highlight puffs
+    drawPuff(x + 22*scale, y - 12*scale, 50*scale, 26*scale, color[3], 0.85);
+    drawPuff(x + 60*scale, y - 8*scale, 42*scale, 22*scale, color[3], 0.8);
+    // top bright
+    drawPuff(x + 28*scale, y - 22*scale, 42*scale, 20*scale, color[4], 0.75);
+    drawPuff(x + 58*scale, y - 18*scale, 36*scale, 18*scale, color[4], 0.7);
+    // rim glow
+    drawPuff(x + 30*scale, y - 28*scale, 34*scale, 16*scale, '#c8eeff', 0.35);
+  });
+}
+
+function drawPuff(x, y, rx, ry, color, alpha) {
+  ctx.beginPath();
+  ctx.ellipse(x, y, rx, ry, 0, 0, Math.PI*2);
+  ctx.fillStyle = color;
+  ctx.globalAlpha = alpha;
+  ctx.fill();
+  ctx.globalAlpha = 1;
+}
+
+function drawDistantLand() {
+  // Distant headland right
+  ctx.beginPath();
+  ctx.moveTo(W*0.72, H*0.42);
+  ctx.bezierCurveTo(W*0.78, H*0.36, W*0.88, H*0.34, W*0.95, H*0.37);
+  ctx.bezierCurveTo(W, H*0.39, W, H*0.44, W, H*0.46);
+  ctx.lineTo(W, H*0.58);
+  ctx.lineTo(W*0.72, H*0.58);
+  ctx.closePath();
+  const landGrad = ctx.createLinearGradient(0, H*0.34, 0, H*0.58);
+  landGrad.addColorStop(0, '#1a5540');
+  landGrad.addColorStop(0.5, '#0e3a2a');
+  landGrad.addColorStop(1, '#082015');
+  ctx.fillStyle = landGrad;
+  ctx.fill();
+  // highlight on land
+  ctx.beginPath();
+  ctx.moveTo(W*0.75, H*0.39);
+  ctx.bezierCurveTo(W*0.82, H*0.35, W*0.9, H*0.34, W*0.96, H*0.37);
+  ctx.strokeStyle = 'rgba(100,220,180,0.25)';
+  ctx.lineWidth = 1.5;
+  ctx.stroke();
+
+  // Left headland
+  ctx.beginPath();
+  ctx.moveTo(0, H*0.44);
+  ctx.bezierCurveTo(W*0.05, H*0.38, W*0.12, H*0.36, W*0.18, H*0.40);
+  ctx.bezierCurveTo(W*0.22, H*0.43, W*0.20, H*0.50, W*0.15, H*0.52);
+  ctx.lineTo(0, H*0.52);
+  ctx.closePath();
+  ctx.fillStyle = '#0e3a2a';
+  ctx.fill();
+}
+
+function drawOcean() {
+  // DEEP OCEAN — far band
+  const ocean1 = ctx.createLinearGradient(0, H*0.42, 0, H*0.62);
+  ocean1.addColorStop(0, '#1aadcc');
+  ocean1.addColorStop(0.4, '#1090b0');
+  ocean1.addColorStop(1, '#0a6070');
+  ctx.fillStyle = ocean1;
+  ctx.beginPath();
+  ctx.moveTo(0, H*0.44);
+  for (let x = 0; x <= W; x += 8) {
+    const wave = Math.sin(x*0.025 + t*0.8) * 2.5 + Math.sin(x*0.04 + t*0.5) * 1.5;
+    ctx.lineTo(x, H*0.44 + wave);
+  }
+  ctx.lineTo(W, H*0.62);
+  ctx.lineTo(0, H*0.62);
+  ctx.closePath();
+  ctx.fill();
+
+  // sun reflection on water
+  const reflection = ctx.createLinearGradient(W*0.4, H*0.44, W*0.85, H*0.44);
+  reflection.addColorStop(0, 'rgba(255,220,60,0)');
+  reflection.addColorStop(0.3, 'rgba(255,220,60,0.18)');
+  reflection.addColorStop(0.5, 'rgba(255,200,40,0.32)');
+  reflection.addColorStop(0.7, 'rgba(255,220,60,0.18)');
+  reflection.addColorStop(1, 'rgba(255,220,60,0)');
+  ctx.fillStyle = reflection;
+  ctx.fillRect(0, H*0.44, W, H*0.12);
+
+  // MID OCEAN — closer, brighter
+  const ocean2 = ctx.createLinearGradient(0, H*0.56, 0, H*0.70);
+  ocean2.addColorStop(0, '#18c8d8');
+  ocean2.addColorStop(0.5, '#10a0b8');
+  ocean2.addColorStop(1, '#0a7090');
+  ctx.fillStyle = ocean2;
+  ctx.beginPath();
+  ctx.moveTo(0, H*0.58);
+  for (let x = 0; x <= W; x += 8) {
+    const wave = Math.sin(x*0.022 + t*1.1 + 1) * 4 + Math.sin(x*0.038 + t*0.7) * 2.5;
+    ctx.lineTo(x, H*0.58 + wave);
+  }
+  ctx.lineTo(W, H*0.72);
+  ctx.lineTo(0, H*0.72);
+  ctx.closePath();
+  ctx.fill();
+
+  // NEAR OCEAN — richest color, closest
+  const ocean3 = ctx.createLinearGradient(0, H*0.66, 0, H*0.78);
+  ocean3.addColorStop(0, '#22d8e8');
+  ocean3.addColorStop(0.4, '#18b8cc');
+  ocean3.addColorStop(1, '#0e8aaa');
+  ctx.fillStyle = ocean3;
+  ctx.beginPath();
+  ctx.moveTo(0, H*0.68);
+  for (let x = 0; x <= W; x += 6) {
+    const wave = Math.sin(x*0.02 + t*1.3 + 2) * 5 + Math.sin(x*0.035 + t*0.9) * 3;
+    ctx.lineTo(x, H*0.68 + wave);
+  }
+  ctx.lineTo(W, H*0.80);
+  ctx.lineTo(0, H*0.80);
+  ctx.closePath();
+  ctx.fill();
+
+  // Wave crest highlights on mid ocean
+  for (let i = 0; i < 5; i++) {
+    const wx = (i * 140 + t * 30) % (W + 80) - 40;
+    const wy = H*0.60 + Math.sin(i*1.4) * 12;
+    ctx.beginPath();
+    ctx.moveTo(wx, wy);
+    ctx.bezierCurveTo(wx+20, wy-3, wx+45, wy-3, wx+65, wy);
+    ctx.strokeStyle = 'rgba(255,255,255,0.45)';
+    ctx.lineWidth = 1.8;
+    ctx.stroke();
+  }
+  // Wave crest highlights near ocean
+  for (let i = 0; i < 6; i++) {
+    const wx = (i * 120 + t * 45 + 60) % (W + 80) - 40;
+    const wy = H*0.70 + Math.sin(i*1.2 + 1) * 8;
+    ctx.beginPath();
+    ctx.moveTo(wx, wy);
+    ctx.bezierCurveTo(wx+18, wy-4, wx+40, wy-4, wx+58, wy);
+    ctx.strokeStyle = 'rgba(255,255,255,0.55)';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+  }
+}
+
+function drawBeach() {
+  // WET SAND — darker, near waterline
+  const wetSand = ctx.createLinearGradient(0, H*0.76, 0, H*0.84);
+  wetSand.addColorStop(0, '#a89060');
+  wetSand.addColorStop(0.3, '#b8a070');
+  wetSand.addColorStop(1, '#c8b078');
+  ctx.fillStyle = wetSand;
+  ctx.beginPath();
+  ctx.moveTo(0, H*0.77);
+  for (let x = 0; x <= W; x += 6) {
+    const shore = Math.sin(x*0.018 + t*1.0) * 3.5 + Math.sin(x*0.03 + t*0.6) * 2;
+    ctx.lineTo(x, H*0.77 + shore);
+  }
+  ctx.lineTo(W, H*0.84);
+  ctx.lineTo(0, H*0.84);
+  ctx.closePath();
+  ctx.fill();
+
+  // MAIN BEACH — warm golden sand
+  const sand = ctx.createLinearGradient(0, H*0.82, 0, H);
+  sand.addColorStop(0, '#d4b86a');
+  sand.addColorStop(0.2, '#e0c878');
+  sand.addColorStop(0.5, '#ecd888');
+  sand.addColorStop(0.75, '#f0e098');
+  sand.addColorStop(1, '#f8eeaa');
+  ctx.fillStyle = sand;
+  ctx.beginPath();
+  ctx.moveTo(0, H*0.83);
+  for (let x = 0; x <= W; x += 6) {
+    const dune = Math.sin(x*0.01 + 0.5) * 4 + Math.sin(x*0.025) * 2;
+    ctx.lineTo(x, H*0.83 + dune);
+  }
+  ctx.lineTo(W, H);
+  ctx.lineTo(0, H);
+  ctx.closePath();
+  ctx.fill();
+
+  // Sand texture — subtle ripple lines
+  for (let i = 0; i < 6; i++) {
+    const sy = H*0.86 + i * 14;
+    ctx.beginPath();
+    ctx.moveTo(0, sy);
+    for (let x = 0; x <= W; x += 12) {
+      ctx.lineTo(x, sy + Math.sin(x * 0.04 + i) * 1.5);
+    }
+    ctx.strokeStyle = `rgba(180,150,60,${0.12 - i*0.015})`;
+    ctx.lineWidth = 0.8;
+    ctx.stroke();
+  }
+
+  // Sand shimmer/highlights
+  for (let i = 0; i < 8; i++) {
+    const sx = 60 + i * 82;
+    const sy = H*0.87 + Math.sin(i*1.3) * 18;
+    const shimGrad = ctx.createRadialGradient(sx, sy, 0, sx, sy, 22);
+    shimGrad.addColorStop(0, 'rgba(255,245,160,0.35)');
+    shimGrad.addColorStop(1, 'rgba(255,245,160,0)');
+    ctx.fillStyle = shimGrad;
+    ctx.fillRect(sx-22, sy-12, 44, 24);
+  }
+}
+
+function drawFoam() {
+  // Foam at waterline — animated
+  for (let i = 0; i < 8; i++) {
+    const fx = (i * 95 + t * 28) % (W + 60) - 30;
+    const fy = H*0.778 + Math.sin(i*0.9 + t*0.4) * 4;
+    const foamAlpha = 0.5 + 0.4 * Math.sin(t*1.5 + i);
+    ctx.beginPath();
+    ctx.ellipse(fx, fy, 28 + Math.sin(i)*8, 5, 0.1, 0, Math.PI*2);
+    ctx.fillStyle = `rgba(255,255,255,${foamAlpha * 0.6})`;
+    ctx.fill();
+    // foam inner shine
+    ctx.beginPath();
+    ctx.ellipse(fx, fy-1, 16, 2.5, 0.1, 0, Math.PI*2);
+    ctx.fillStyle = `rgba(255,255,255,${foamAlpha * 0.8})`;
+    ctx.fill();
+  }
+  // Second foam row
+  for (let i = 0; i < 6; i++) {
+    const fx = (i * 118 + t * 20 + 50) % (W + 60) - 30;
+    const fy = H*0.772 + Math.sin(i*1.1 + t*0.3 + 1) * 3;
+    ctx.beginPath();
+    ctx.ellipse(fx, fy, 20, 3.5, 0, 0, Math.PI*2);
+    ctx.fillStyle = `rgba(255,255,255,0.35)`;
+    ctx.fill();
+  }
+}
+
+function drawCityGlow() {
+  // Distant city lights on the right headland
+  const cityGlow = ctx.createRadialGradient(W*0.88, H*0.40, 0, W*0.88, H*0.40, 60);
+  cityGlow.addColorStop(0, 'rgba(255,220,120,0.25)');
+  cityGlow.addColorStop(1, 'rgba(255,220,120,0)');
+  ctx.fillStyle = cityGlow;
+  ctx.fillRect(W*0.7, H*0.32, 150, 80);
+
+  // tiny city windows
+  for (let i = 0; i < 10; i++) {
+    const bx = W*0.80 + i * 8 + Math.sin(i)*4;
+    const by = H*0.38 + Math.cos(i*1.3)*6;
+    ctx.beginPath();
+    ctx.rect(bx, by, 3, 4);
+    ctx.fillStyle = `rgba(255,230,100,${0.5 + 0.4*Math.sin(t*0.3+i)})`;
+    ctx.fill();
+  }
+}
+
+function drawPalmTrees() {
+  // LEFT PALM
+  drawPalm(62, H*0.84, 1.0, -0.15);
+  // RIGHT PALM
+  drawPalm(W - 55, H*0.84, -1.0, 0.12);
+  // Small mid palm
+  drawPalm(W*0.3, H*0.86, 0.7, -0.08);
+}
+
+function drawPalm(x, y, dir, lean) {
+  // Trunk — multiple curves for roundness
+  const trunkH = 65;
+  ctx.beginPath();
+  ctx.moveTo(x, y);
+  ctx.bezierCurveTo(x + lean*20, y - trunkH*0.4, x + dir*10 + lean*30, y - trunkH*0.7, x + dir*15 + lean*40, y - trunkH);
+  ctx.strokeStyle = '#6b4a18';
+  ctx.lineWidth = 6;
+  ctx.lineCap = 'round';
+  ctx.stroke();
+  // trunk highlight
+  ctx.beginPath();
+  ctx.moveTo(x + 2, y);
+  ctx.bezierCurveTo(x + lean*20 + 2, y - trunkH*0.4, x + dir*10 + lean*30 + 2, y - trunkH*0.7, x + dir*15 + lean*40 + 2, y - trunkH);
+  ctx.strokeStyle = 'rgba(140,100,40,0.5)';
+  ctx.lineWidth = 2;
+  ctx.stroke();
+
+  const tipX = x + dir*15 + lean*40;
+  const tipY = y - trunkH;
+
+  // FRONDS — layered for depth
+  const fronds = [
+    { angle: -0.4, len: 52, color: '#1a7a30' },
+    { angle: 0.2, len: 48, color: '#1f9038' },
+    { angle: -1.1, len: 44, color: '#158028' },
+    { angle: 0.9, len: 46, color: '#22a040' },
+    { angle: -1.8, len: 40, color: '#128025' },
+    { angle: 1.6, len: 42, color: '#1a9035' },
+    { angle: -2.4, len: 38, color: '#0f7020' },
+    { angle: 2.2, len: 36, color: '#1a8530' },
+  ];
+  fronds.forEach(f => {
+    const sway = Math.sin(t * 0.6 + f.angle) * 0.08;
+    const angle = f.angle + sway;
+    const ex = tipX + Math.cos(angle) * f.len;
+    const ey = tipY + Math.sin(angle) * f.len;
+    const cx1 = tipX + Math.cos(angle - 0.3) * f.len * 0.5;
+    const cy1 = tipY + Math.sin(angle - 0.3) * f.len * 0.5;
+    // shadow frond
+    ctx.beginPath();
+    ctx.moveTo(tipX, tipY);
+    ctx.quadraticCurveTo(cx1, cy1 + 3, ex, ey + 4);
+    ctx.strokeStyle = 'rgba(0,60,10,0.35)';
+    ctx.lineWidth = 5;
+    ctx.lineCap = 'round';
+    ctx.stroke();
+    // main frond
+    ctx.beginPath();
+    ctx.moveTo(tipX, tipY);
+    ctx.quadraticCurveTo(cx1, cy1, ex, ey);
+    ctx.strokeStyle = f.color;
+    ctx.lineWidth = 3.5;
+    ctx.stroke();
+    // highlight
+    ctx.beginPath();
+    ctx.moveTo(tipX, tipY);
+    ctx.quadraticCurveTo(cx1 - 1, cy1 - 1, ex - 1, ey - 1);
+    ctx.strokeStyle = 'rgba(100,220,100,0.25)';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+  });
+}
+
+function drawUI() {
+  // Hero text area — subtle glow behind text
+  const textGlow = ctx.createRadialGradient(W*0.42, H*0.38, 0, W*0.42, H*0.38, 180);
+  textGlow.addColorStop(0, 'rgba(5,15,40,0.55)');
+  textGlow.addColorStop(1, 'rgba(5,15,40,0)');
+  ctx.fillStyle = textGlow;
+  ctx.fillRect(W*0.1, H*0.18, W*0.65, H*0.5);
+
+  // STILTS wordmark
+  ctx.font = 'bold 13px system-ui';
+  ctx.fillStyle = '#ffffff';
+  ctx.fillText('STILTS', 22, 24);
+  ctx.font = '10px system-ui';
+  ctx.fillStyle = 'rgba(180,240,240,0.7)';
+  ctx.fillText('● Tampa Bay Region', 90, 24);
+
+  // Main headline
+  ctx.font = 'bold 40px system-ui';
+  ctx.fillStyle = '#ffffff';
+  ctx.shadowColor = 'rgba(0,0,0,0.6)';
+  ctx.shadowBlur = 20;
+  ctx.fillText('Build smarter.', W*0.12, H*0.33);
+
+  ctx.fillStyle = '#ffffff';
+  ctx.fillText('Build ', W*0.12, H*0.47);
+
+  // Gradient text for "safer."
+  const saferGrad = ctx.createLinearGradient(W*0.12 + 108, H*0.35, W*0.12 + 108 + 140, H*0.47);
+  saferGrad.addColorStop(0, '#3ef0d0');
+  saferGrad.addColorStop(1, '#60ffee');
+  ctx.fillStyle = saferGrad;
+  ctx.fillText('safer.', W*0.12 + 108, H*0.47);
+  ctx.shadowBlur = 0;
+
+  // Subtitle
+  ctx.font = '11px system-ui';
+  ctx.fillStyle = 'rgba(180,230,240,0.88)';
+  ctx.shadowColor = 'rgba(0,0,0,0.8)';
+  ctx.shadowBlur = 12;
+  ctx.fillText('Stilts analyzes flood risk, GIS data, and building materials', W*0.12, H*0.56);
+  ctx.fillText('to help Tampa Bay developers build structures that survive.', W*0.12, H*0.62);
+  ctx.shadowBlur = 0;
+
+  // CTA Button
+  const btnX = W*0.12, btnY = H*0.67, btnW = 148, btnH = 34;
+  const btnGrad = ctx.createLinearGradient(btnX, btnY, btnX + btnW, btnY);
+  btnGrad.addColorStop(0, '#2abfbf');
+  btnGrad.addColorStop(1, '#3ef0d0');
+  ctx.beginPath();
+  ctx.roundRect(btnX, btnY, btnW, btnH, 17);
+  ctx.fillStyle = btnGrad;
+  ctx.fill();
+  // btn shine
+  ctx.beginPath();
+  ctx.roundRect(btnX + 4, btnY + 3, btnW - 8, 12, 8);
+  ctx.fillStyle = 'rgba(255,255,255,0.2)';
+  ctx.fill();
+  ctx.font = 'bold 11px system-ui';
+  ctx.fillStyle = '#062020';
+  ctx.fillText('Analyze Your Project', btnX + 14, btnY + 22);
+
+  // Stats strip
+  ctx.fillStyle = 'rgba(8,20,45,0.82)';
+  ctx.fillRect(0, H - 42, W, 42);
+  ctx.strokeStyle = 'rgba(42,191,191,0.25)';
+  ctx.lineWidth = 0.5;
+  ctx.beginPath(); ctx.moveTo(0, H-42); ctx.lineTo(W, H-42); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(W/3, H-42); ctx.lineTo(W/3, H); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(W*2/3, H-42); ctx.lineTo(W*2/3, H); ctx.stroke();
+
+  const stats = [
+    ['Hillsborough + Pinellas', 'Counties Covered', W/6],
+    ['FEMA · NOAA · USGS', 'Live Data Sources', W/2],
+    ['AI-Powered', 'Material Risk Analysis', W*5/6],
+  ];
+  stats.forEach(([title, sub, cx]) => {
+    ctx.font = 'bold 10px system-ui';
+    ctx.fillStyle = '#e8f4f8';
+    ctx.textAlign = 'center';
+    ctx.fillText(title, cx, H - 25);
+    ctx.font = '9px system-ui';
+    ctx.fillStyle = 'rgba(100,180,200,0.7)';
+    ctx.fillText(sub, cx, H - 12);
+  });
+  ctx.textAlign = 'left';
+}
+
+function animate() {
+  t += 0.016;
+  drawScene();
+  requestAnimationFrame(animate);
+}
+
+animate();
+</script>
+</body>
+</html>

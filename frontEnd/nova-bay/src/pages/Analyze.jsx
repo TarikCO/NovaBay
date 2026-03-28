@@ -62,31 +62,8 @@ function Analyze() {
 
       <div className="analyze-main">
         <main className="analyze-map-area">
-          <div className="map-frame">
-            <MapView />
-          </div>
+          <MapView />
         </main>
-
-        <section className="info-strip">
-          <div className="info-col">
-            <span className="info-label">FLOOD ZONE</span>
-            <span className="info-value">—</span>
-            <span className="info-label">ELEVATION</span>
-            <span className="info-value">—</span>
-          </div>
-
-          <div className="info-col">
-            <span className="info-label">SURGE ZONE</span>
-            <span className="info-value">—</span>
-            <span className="info-label">DISTANCE TO COAST</span>
-            <span className="info-value">—</span>
-          </div>
-
-          <div className="info-col score-col">
-            <span className="score-placeholder">?</span>
-            <span className="score-note">Score appears after analysis</span>
-          </div>
-        </section>
       </div>
     </div>
   )

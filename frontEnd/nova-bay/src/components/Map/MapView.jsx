@@ -17,6 +17,8 @@ function MapView() {
       maxBounds: [[-83.5, 27.2], [-81.8, 28.5]],
       minZoom: 9,
       maxZoom: 18,
+      pitch: 0,
+      bearing: 0,
     })
 
     map.addControl(new maplibregl.NavigationControl(), 'bottom-right')
@@ -30,17 +32,25 @@ function MapView() {
       'bottom-right',
     )
     map.addControl(new maplibregl.ScaleControl({ unit: 'imperial' }), 'bottom-left')
+    map.dragRotate.disable()
 
-    map.jumpTo({ center: tampaCenter, zoom: 8 })
+    map.jumpTo({ center: tampaCenter, zoom: 8, pitch: 0, bearing: 0 })
 
     const handleLoad = () => {
       setIsLoading(false)
+
       map.flyTo({
         center: tampaCenter,
         zoom: 11,
+        pitch: 0,
+        bearing: 0,
         duration: 2000,
         essential: true,
       })
+
+      setTimeout(() => {
+        map.resize()
+      }, 100)
     }
 
     map.on('load', handleLoad)
@@ -74,6 +84,7 @@ function MapView() {
     <div className="map-view">
       {isLoading && <div className="map-loading">Loading map...</div>}
       <div id="map" />
+      <div className="map-hint">Click to drop a pin · Scroll to zoom</div>
     </div>
   )
 }

@@ -8,7 +8,7 @@
   position: absolute;
   top: 16px;
   left: 16px;
-  z-index: 2;
+  z-index: 5;
   background: rgba(10, 17, 31, 0.9);
   border: 1px solid rgba(255, 255, 255, 0.18);
   color: #f2f6ff;
@@ -16,6 +16,22 @@
   border-radius: 8px;
   font-size: 13px;
   letter-spacing: 0.02em;
+}
+
+.map-hint {
+  position: absolute;
+  left: 50%;
+  bottom: 8px;
+  transform: translateX(-50%);
+  z-index: 5;
+  color: rgba(122, 156, 192, 0.8);
+  font-size: 11px;
+  letter-spacing: 0.02em;
+  padding: 4px 8px;
+  border-radius: 6px;
+  background: rgba(6, 13, 31, 0.45);
+  pointer-events: none;
+  text-align: center;
 }
 
 .map-marker {
@@ -28,15 +44,15 @@
   position: absolute;
   inset: 0;
   border-radius: 50%;
-  background: radial-gradient(circle at 35% 35%, #ffd8b2, var(--color-accent) 70%);
-  box-shadow: 0 0 0 2px rgba(249, 115, 22, 0.35);
+  background: radial-gradient(circle at 35% 35%, #cffff4, #3ef0d0 70%);
+  box-shadow: 0 0 0 2px rgba(62, 240, 208, 0.45);
 }
 
 .map-marker-pulse {
   position: absolute;
   inset: -8px;
   border-radius: 50%;
-  border: 2px solid rgba(255, 141, 73, 0.55);
+  border: 2px solid rgba(62, 240, 208, 0.4);
   animation: marker-pulse 1.6s ease-out infinite;
 }
 

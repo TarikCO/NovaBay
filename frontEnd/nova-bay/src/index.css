@@ -1,10 +1,30 @@
 :root {
-  --color-bg: #0a0f1a;
-  --color-surface: #111827;
-  --color-border: #1f2937;
-  --color-accent: #f97316;
-  --color-text-primary: #f9fafb;
-  --color-text-muted: #6b7280;
+  /* Backgrounds - deep coastal navy */
+  --color-bg: #0b1523;
+  --color-surface: #111f35;
+  --color-surface-2: #162840;
+  --color-border: #1e3a52;
+  --color-border-soft: #162d42;
+
+  /* Accent - glowing aqua/cyan */
+  --color-accent: #2abfbf;
+  --color-accent-bright: #3ef0d0;
+  --color-accent-soft: #7fffd4;
+  --color-accent-dim: #1a7a7a;
+
+  /* Water tones */
+  --color-water-1: #2abfbf;
+  --color-water-2: #3ef0d0;
+  --color-water-3: #1a9090;
+
+  /* Blue-purple cliff shadows */
+  --color-deep: #1e2d5a;
+  --color-deep-2: #2d3f7a;
+
+  /* Text */
+  --color-text-primary: #e8f4f8;
+  --color-text-secondary: #8ab4c8;
+  --color-text-muted: #4a7a90;
 }
 
 * {
