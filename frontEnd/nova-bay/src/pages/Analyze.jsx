@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import MapView from '../components/Map/MapView'
-import RiskMapSidebar from '../components/Sidebar/RiskMapSidebar' // Make sure this path is correct
+import RiskMapSidebar from '../components/RiskMap/RiskMapSidebar' // Make sure this path is correct
 import './Analyze.css'
 
 function Analyze() {
