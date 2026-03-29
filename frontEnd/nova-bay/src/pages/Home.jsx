@@ -1,13 +1,74 @@
+import { useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import HeroMap from '../components/Map/HeroMap'
 import './Home.css'
 
+const BRAND_CHARS = ['N','O','V','A','B','A','Y']
+
 function Home() {
   const navigate = useNavigate()
+  const mapBgRef = useRef(null)
+  const bottomBarRef = useRef(null)
+
+  // Mouse parallax on the satellite background
+  useEffect(() => {
+    let targetX = 0, targetY = 0
+    let currentX = 0, currentY = 0
+    const STRENGTH = 28
+    const LERP = 0.045
+    let rafId
+
+    const onMouseMove = (e) => {
+      const nx = (e.clientX / window.innerWidth - 0.5) * 2
+      const ny = (e.clientY / window.innerHeight - 0.5) * 2
+      targetX = nx * STRENGTH
+      targetY = ny * STRENGTH
+    }
+
+    const animate = () => {
+      currentX += (targetX - currentX) * LERP
+      currentY += (targetY - currentY) * LERP
+      if (mapBgRef.current) {
+        mapBgRef.current.style.transform =
+          `translate(${-currentX}px, ${-currentY}px) scale(1.06)`
+      }
+      rafId = requestAnimationFrame(animate)
+    }
+
+    window.addEventListener('mousemove', onMouseMove)
+    rafId = requestAnimationFrame(animate)
+    return () => {
+      window.removeEventListener('mousemove', onMouseMove)
+      cancelAnimationFrame(rafId)
+    }
+  }, [])
+
+  // Stat count-up after bottom bar slides in
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (!bottomBarRef.current) return
+      bottomBarRef.current.querySelectorAll('.stat-num[data-target]').forEach((el) => {
+        const target = parseInt(el.dataset.target, 10)
+        const suffix = el.dataset.suffix || ''
+        const start = performance.now()
+        const duration = 2200
+        const step = (now) => {
+          const elapsed = now - start
+          const progress = Math.min(elapsed / duration, 1)
+          const eased = progress === 1 ? 1 : 1 - Math.pow(2, -10 * progress)
+          el.textContent = Math.round(eased * target).toLocaleString() + suffix
+          if (progress < 1) requestAnimationFrame(step)
+        }
+        requestAnimationFrame(step)
+      })
+    }, 2650)
+    return () => clearTimeout(timer)
+  }, [])
 
   return (
     <div className="home-page">
-      <div className="hero-map-bg" aria-hidden="true">
+      <section className="hero-section">
+      <div className="hero-map-bg" aria-hidden="true" ref={mapBgRef}>
         <HeroMap />
       </div>
       <div className="hero-overlay" aria-hidden="true" />
@@ -34,7 +95,13 @@ function Home() {
 
       <main className="home-main">
         <div className="pre-rule" aria-hidden="true" />
-        <h1 className="brand-title">NovaBay</h1>
+        <div className="brand-wrap">
+          <h1 className="brand">
+            {BRAND_CHARS.map((ch, i) => (
+              <span key={i} className="char">{ch}</span>
+            ))}
+          </h1>
+        </div>
         <p className="brand-tagline">
           Build Smarter. Build <em>Safer.</em>
         </p>
@@ -76,21 +143,21 @@ function Home() {
         <span className="loc-text">Tampa Bay, Florida</span>
       </div>
 
-      <section className="bottom-bar" aria-label="Platform statistics">
+      <section className="bottom-bar" aria-label="Platform statistics" ref={bottomBarRef}>
         <article className="stat-block">
-          <span className="stat-num">2,400+</span>
+          <span className="stat-num" data-target="2400" data-suffix="+">0</span>
           <span className="stat-label">Parcels Analyzed</span>
         </article>
         <article className="stat-block">
-          <span className="stat-num">FEMA A-V</span>
+          <span className="stat-num">FEMA A–V</span>
           <span className="stat-label">Zone Coverage</span>
         </article>
         <article className="stat-block">
-          <span className="stat-num">Real-Time</span>
-          <span className="stat-label">Storm Surge Data</span>
+          <span className="stat-num" data-target="12" data-suffix=" yrs">0</span>
+          <span className="stat-label">Industry Experience</span>
         </article>
         <article className="stat-block">
-          <span className="stat-num">98%</span>
+          <span className="stat-num" data-target="98" data-suffix="%">0</span>
           <span className="stat-label">Accuracy Rate</span>
         </article>
       </section>
@@ -99,6 +166,70 @@ function Home() {
         <div className="scroll-line" />
         <span>Scroll</span>
       </div>
+      </section>
+
+      <section className="info-section how-section">
+        <div className="section-inner">
+          <div className="section-label">Process</div>
+          <h2 className="section-title">How It Works</h2>
+          <div className="steps-grid">
+            <div className="step-card">
+              <span className="step-num">01</span>
+              <h3 className="step-heading">Enter Your Location</h3>
+              <p className="step-body">Drop a pin or type an address anywhere in the Tampa Bay region. NovaBay pinpoints your parcel to the meter using county parcel data and GIS boundary layers.</p>
+            </div>
+            <div className="step-card">
+              <span className="step-num">02</span>
+              <h3 className="step-heading">Analyze Risk Data</h3>
+              <p className="step-body">We cross-reference FEMA flood zones, LiDAR elevation models, storm surge history, and county GIS layers in real time to generate a complete risk profile.</p>
+            </div>
+            <div className="step-card">
+              <span className="step-num">03</span>
+              <h3 className="step-heading">Receive Your Report</h3>
+              <p className="step-body">Get a clear risk classification, recommended base flood elevation, and material guidelines optimized for your specific zone and project type.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="info-section features-section">
+        <div className="section-inner">
+          <div className="section-label">Capabilities</div>
+          <h2 className="section-title">What We Analyze</h2>
+          <div className="features-grid">
+            <div className="feature-card">
+              <div className="feature-icon">◈</div>
+              <h3>Flood Zone Classification</h3>
+              <p>Full FEMA Zone A through V coverage — including AE, AO, VE, and X zones — mapped to your exact parcel boundary using official NFHL data.</p>
+            </div>
+            <div className="feature-card">
+              <div className="feature-icon">◉</div>
+              <h3>Elevation &amp; Topography</h3>
+              <p>High-resolution LiDAR elevation data surfaces how water will move across your site during a 100-year or 500-year flood event.</p>
+            </div>
+            <div className="feature-card">
+              <div className="feature-icon">◬</div>
+              <h3>Storm Surge History</h3>
+              <p>Decades of Gulf storm track data — including Irma, Ian, and Milton — contextualize your site's true exposure and worst-case inundation scenarios.</p>
+            </div>
+            <div className="feature-card">
+              <div className="feature-icon">▣</div>
+              <h3>Material Recommendations</h3>
+              <p>Concrete, CMU, elevated framing, breakaway walls — we match ASCE 7 and Florida Building Code flood-resistant construction standards to your zone.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="cta-section">
+        <div className="cta-inner">
+          <p className="cta-eyebrow">Ready to build smarter?</p>
+          <h2 className="cta-heading">Analyze your site today.</h2>
+          <button type="button" className="btn-main cta-btn" onClick={() => navigate('/analyze')}>
+            Open the Analyzer
+          </button>
+        </div>
+      </section>
     </div>
   )
 }
