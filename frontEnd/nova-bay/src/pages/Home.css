@@ -200,18 +200,6 @@ body.home-map-active {
   perspective: 800px;
 }
 
-.brand-wrap::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -120%;
-  bottom: 0;
-  width: 60%;
-  background: linear-gradient(105deg, transparent 30%, rgba(255, 255, 255, 0.12) 50%, transparent 70%);
-  animation: shimmer-sweep 1s 1.6s ease forwards;
-  pointer-events: none;
-}
-
 .brand {
   font-family: 'Cormorant Garamond', serif;
   font-size: clamp(4.6rem, 11vw, 9rem);

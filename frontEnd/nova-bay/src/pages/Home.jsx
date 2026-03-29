@@ -120,7 +120,7 @@ function Home() {
 
         <nav aria-label="Primary" className="nav-links-wrap">
           <ul className="nav-links">
-            <li><a href="#" onClick={(e) => { e.preventDefault(); navigate('/risk-map'); }}>Risk Map</a></li>
+            <li><a href="#" onClick={(e) => { e.preventDefault(); handleExploreRiskMap(); }}>Risk Map</a></li>
             <li><a href="#" onClick={(e) => { e.preventDefault(); navigate('/analyzer'); }}>Analyzer</a></li>
           </ul>
         </nav>
