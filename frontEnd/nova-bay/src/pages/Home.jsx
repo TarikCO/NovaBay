@@ -12,6 +12,16 @@ function Home() {
   const bottomBarRef = useRef(null)
   const [isTransitioning, setIsTransitioning] = useState(false)
   const homePageRef = useRef(null)
+  const isTransitioningRef = useRef(false)
+
+  useEffect(() => {
+    isTransitioningRef.current = isTransitioning
+    document.body.classList.toggle('home-map-active', isTransitioning)
+
+    return () => {
+      document.body.classList.remove('home-map-active')
+    }
+  }, [isTransitioning])
 
   // Mouse parallax on the satellite background
   useEffect(() => {
@@ -29,6 +39,11 @@ function Home() {
     }
 
     const animate = () => {
+      if (isTransitioningRef.current) {
+        rafId = requestAnimationFrame(animate)
+        return
+      }
+
       currentX += (targetX - currentX) * LERP
       currentY += (targetY - currentY) * LERP
       if (mapBgRef.current) {
@@ -75,16 +90,22 @@ function Home() {
       homePageRef.current.classList.add('hero-transitioning')
     }
   }
+  // hello world
 
   const handleTransitionClose = () => {
     if (homePageRef.current) {
       homePageRef.current.classList.remove('hero-transitioning')
     }
+
+    if (mapBgRef.current) {
+      mapBgRef.current.style.transform = 'translate(0px, 0px) scale(1.06)'
+    }
+
     setIsTransitioning(false)
   }
 
   return (
-    <div className="home-page" ref={homePageRef}>
+    <div className={`home-page${isTransitioning ? ' hero-transitioning map-active' : ''}`} ref={homePageRef}>
       <section className="hero-section">
       <div className="hero-map-bg" aria-hidden="true" ref={mapBgRef}>
         <HeroMap />
@@ -99,7 +120,7 @@ function Home() {
 
         <nav aria-label="Primary" className="nav-links-wrap">
           <ul className="nav-links">
-            <li><a href="#" onClick={(e) => { e.preventDefault(); navigate('/risk-map'); }}>Risk Map</a></li>
+            <li><a href="#" onClick={(e) => { e.preventDefault(); handleExploreRiskMap(); }}>Risk Map</a></li>
             <li><a href="#" onClick={(e) => { e.preventDefault(); navigate('/analyzer'); }}>Analyzer</a></li>
           </ul>
         </nav>
