@@ -175,6 +175,7 @@ function BlueprintCanvas({ rooms, setRooms, selectedId, setSelectedId }) {
   }, [onMouseUp]);
 
   const onRoomMouseDown = useCallback((e, id, mode) => {
+    e.preventDefault();
     e.stopPropagation();
     if (!ref.current) return;
     setSelectedId(id);
@@ -225,6 +226,7 @@ function BlueprintCanvas({ rooms, setRooms, selectedId, setSelectedId }) {
         position: "relative",
         overflow: "hidden",
         cursor: "default",
+        userSelect: "none",
         backgroundImage: [
           "linear-gradient(rgba(214,220,226,0.35) 1px, transparent 1px)",
           "linear-gradient(90deg, rgba(214,220,226,0.35) 1px, transparent 1px)",
@@ -253,6 +255,7 @@ function BlueprintCanvas({ rooms, setRooms, selectedId, setSelectedId }) {
           <div
             key={room.id}
             onMouseDown={(e) => onRoomMouseDown(e, room.id, "drag")}
+            onDragStart={(e) => e.preventDefault()}
             style={{
               position: "absolute",
               left: room.x,
@@ -263,6 +266,9 @@ function BlueprintCanvas({ rooms, setRooms, selectedId, setSelectedId }) {
               background: sel ? `${room.color}88` : `${room.color}66`,
               cursor: "grab",
               userSelect: "none",
+              WebkitUserSelect: "none",
+              WebkitUserDrag: "none",
+              touchAction: "none",
               boxShadow: sel ? `0 0 0 1px ${room.color}99, inset 0 0 22px ${room.color}66` : "none",
             }}
           >
