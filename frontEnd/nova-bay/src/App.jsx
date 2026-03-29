@@ -9,7 +9,9 @@ function App() {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/analyze" element={<Analyze />} />
+        <Route path="/risk-map" element={<Analyze />} />
         <Route path="/sandbox" element={<NovaBay />} />
+        <Route path="/analyzer" element={<NovaBay />} />
       </Routes>
     </BrowserRouter>
   )
