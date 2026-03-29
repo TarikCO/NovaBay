@@ -36,10 +36,10 @@
   z-index: 1;
   background: linear-gradient(
     to top,
-    rgba(5, 16, 12, 0.95) 0%,
-    rgba(5, 16, 12, 0.52) 38%,
-    rgba(5, 16, 12, 0.08) 62%,
-    rgba(5, 16, 12, 0.3) 100%
+    rgba(5, 16, 12, 0.72) 0%,
+    rgba(5, 16, 12, 0.32) 38%,
+    rgba(5, 16, 12, 0.02) 62%,
+    rgba(5, 16, 12, 0.15) 100%
   );
 }
 
@@ -734,6 +734,94 @@
 .cta-btn {
   padding: 17px 52px;
   font-size: 0.78rem;
+}
+
+/* ─── Hero to Map Transition Animations ─── */
+
+/* State: Hero transitioning to map */
+.home-page.hero-transitioning .hero-map-bg {
+  animation: bg-zoom-darken 0.9s cubic-bezier(0.4, 0, 0.2, 1) 0.3s forwards;
+}
+
+.home-page.hero-transitioning .pre-rule {
+  animation: fade-up-exit 0.6s ease-in forwards;
+}
+
+.home-page.hero-transitioning .brand-wrap {
+  animation: fade-up-exit 0.6s ease-in forwards;
+}
+
+.home-page.hero-transitioning .brand-tagline {
+  animation: fade-up-exit 0.6s ease-in 0.05s forwards;
+}
+
+.home-page.hero-transitioning .brand-desc {
+  animation: fade-up-exit 0.6s ease-in 0.1s forwards;
+}
+
+.home-page.hero-transitioning .cta-row {
+  animation: fade-up-exit 0.6s ease-in 0.15s forwards;
+}
+
+.home-page.hero-transitioning .location-tag {
+  animation: fade-exit 0.4s ease-in forwards;
+}
+
+.home-page.hero-transitioning .scroll-hint {
+  animation: fade-exit 0.4s ease-in forwards;
+}
+
+.home-page.hero-transitioning .bottom-bar {
+  animation: fade-exit 0.4s ease-in forwards;
+}
+
+.home-page.hero-transitioning .home-nav {
+  animation: fade-exit 0.4s ease-in forwards;
+}
+
+/* Keep logo visible */
+.home-page.hero-transitioning .logo-mark {
+  animation: none !important;
+}
+
+.home-page.hero-transitioning .logo-text {
+  animation: none !important;
+}
+
+.home-page.hero-transitioning .logo-ring {
+  animation: none !important;
+}
+
+/* Map transition animations */
+@keyframes bg-zoom-darken {
+  from {
+    transform: scale(1.06) translate(0, 0);
+    filter: brightness(0.5) saturate(0.82);
+  }
+  to {
+    transform: scale(2.2);
+    filter: brightness(0.15) saturate(0.72);
+  }
+}
+
+@keyframes fade-up-exit {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+}
+
+@keyframes fade-exit {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
 }
 
 @media (max-width: 1100px) {

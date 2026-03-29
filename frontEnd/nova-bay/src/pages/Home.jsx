@@ -1,6 +1,7 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import HeroMap from '../components/Map/HeroMap'
+import RiskMapOverlay from '../components/HeroTransition/RiskMapOverlay'
 import './Home.css'
 
 const BRAND_CHARS = ['N','O','V','A','B','A','Y']
@@ -9,6 +10,8 @@ function Home() {
   const navigate = useNavigate()
   const mapBgRef = useRef(null)
   const bottomBarRef = useRef(null)
+  const [isTransitioning, setIsTransitioning] = useState(false)
+  const homePageRef = useRef(null)
 
   // Mouse parallax on the satellite background
   useEffect(() => {
@@ -65,8 +68,23 @@ function Home() {
     return () => clearTimeout(timer)
   }, [])
 
+  // Handle hero-to-map transition
+  const handleExploreRiskMap = () => {
+    setIsTransitioning(true)
+    if (homePageRef.current) {
+      homePageRef.current.classList.add('hero-transitioning')
+    }
+  }
+
+  const handleTransitionClose = () => {
+    if (homePageRef.current) {
+      homePageRef.current.classList.remove('hero-transitioning')
+    }
+    setIsTransitioning(false)
+  }
+
   return (
-    <div className="home-page">
+    <div className="home-page" ref={homePageRef}>
       <section className="hero-section">
       <div className="hero-map-bg" aria-hidden="true" ref={mapBgRef}>
         <HeroMap />
@@ -81,14 +99,12 @@ function Home() {
 
         <nav aria-label="Primary" className="nav-links-wrap">
           <ul className="nav-links">
-            <li><a href="#">Platform</a></li>
-            <li><a href="#">Risk Maps</a></li>
-            <li><a href="#">Projects</a></li>
-            <li><a href="#">About</a></li>
+            <li><a href="#" onClick={(e) => { e.preventDefault(); navigate('/risk-map'); }}>Risk Map</a></li>
+            <li><a href="#" onClick={(e) => { e.preventDefault(); navigate('/analyzer'); }}>Analyzer</a></li>
           </ul>
         </nav>
 
-        <button type="button" className="nav-cta" onClick={() => navigate('/sandbox')}>
+        <button type="button" className="nav-cta" onClick={() => navigate('/analyzer')}>
           Get Started
         </button>
       </header>
@@ -112,11 +128,11 @@ function Home() {
         </p>
 
         <div className="cta-row">
-          <button type="button" className="btn-main" onClick={() => navigate('/sandbox')}>
-            Analyze Your Project
+          <button type="button" className="btn-main" onClick={handleExploreRiskMap}>
+            Explore Risk Map
           </button>
-          <button type="button" className="btn-ghost" onClick={() => navigate('/analyze')}>
-            Explore Risk Maps
+          <button type="button" className="btn-ghost" onClick={() => navigate('/analyzer')}>
+            Analyze Your Project
           </button>
         </div>
       </main>
@@ -223,13 +239,16 @@ function Home() {
 
       <section className="cta-section">
         <div className="cta-inner">
-          <p className="cta-eyebrow">Ready to build smarter?</p>
-          <h2 className="cta-heading">Analyze your site today.</h2>
-          <button type="button" className="btn-main cta-btn" onClick={() => navigate('/sandbox')}>
-            Open the Analyzer
+          <p className="cta-eyebrow">Ready to understand your risk?</p>
+          <h2 className="cta-heading">Explore the risk map today.</h2>
+          <button type="button" className="btn-main cta-btn" onClick={handleExploreRiskMap}>
+            View Risk Map
           </button>
         </div>
       </section>
+
+      {/* Hero to Map Transition Overlay */}
+      <RiskMapOverlay isActive={isTransitioning} onClose={handleTransitionClose} />
     </div>
   )
 }
