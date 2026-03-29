@@ -1,0 +1,28 @@
+# Python Virtual Environment
+venv/
+ENV/
+.venv/
+bin/
+lib/
+share/
+pyvenv.cfg
+
+# Secrets & Environment Variables
+.env
+.env.local
+.env.*.local
+
+# Data (Avoid pushing massive GeoJSONs if they exceed 50MB)
+# data/*.geojson
+
+# Logs and databases
+*.log
+*.sqlite
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Node (if you installed the CLI at the root)
+node_modules/
+dist/
