@@ -88,7 +88,7 @@ function Home() {
           </ul>
         </nav>
 
-        <button type="button" className="nav-cta" onClick={() => navigate('/analyze')}>
+        <button type="button" className="nav-cta" onClick={() => navigate('/sandbox')}>
           Get Started
         </button>
       </header>
@@ -112,7 +112,7 @@ function Home() {
         </p>
 
         <div className="cta-row">
-          <button type="button" className="btn-main" onClick={() => navigate('/analyze')}>
+          <button type="button" className="btn-main" onClick={() => navigate('/sandbox')}>
             Analyze Your Project
           </button>
           <button type="button" className="btn-ghost" onClick={() => navigate('/analyze')}>
@@ -225,7 +225,7 @@ function Home() {
         <div className="cta-inner">
           <p className="cta-eyebrow">Ready to build smarter?</p>
           <h2 className="cta-heading">Analyze your site today.</h2>
-          <button type="button" className="btn-main cta-btn" onClick={() => navigate('/analyze')}>
+          <button type="button" className="btn-main cta-btn" onClick={() => navigate('/sandbox')}>
             Open the Analyzer
           </button>
         </div>
