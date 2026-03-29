@@ -41,14 +41,14 @@ const STYLES = [
 ];
 
 const ROOM_TYPES = [
-  { id: "living", label: "Living Room", color: "#5ecfb1", w: 180, h: 130 },
-  { id: "kitchen", label: "Kitchen", color: "#72d7be", w: 120, h: 100 },
-  { id: "bedroom", label: "Bedroom", color: "#4ec0a4", w: 130, h: 110 },
-  { id: "bath", label: "Bathroom", color: "#8adbc7", w: 80, h: 70 },
-  { id: "study", label: "Study", color: "#67c9af", w: 100, h: 80 },
-  { id: "garage", label: "Garage", color: "#7ab7a6", w: 130, h: 90 },
-  { id: "deck", label: "Deck/Lanai", color: "#91dfcd", w: 160, h: 70 },
-  { id: "utility", label: "Utility", color: "#6cbca7", w: 70, h: 60 },
+  { id: "living", label: "Living Room", color: "#60a5fa", w: 180, h: 130 },
+  { id: "kitchen", label: "Kitchen", color: "#f87171", w: 120, h: 100 },
+  { id: "bedroom", label: "Bedroom", color: "#c084fc", w: 130, h: 110 },
+  { id: "bath", label: "Bathroom", color: "#67e8f9", w: 80, h: 70 },
+  { id: "study", label: "Study", color: "#fbbf24", w: 100, h: 80 },
+  { id: "garage", label: "Garage", color: "#94a3b8", w: 130, h: 90 },
+  { id: "deck", label: "Deck/Lanai", color: "#4ade80", w: 160, h: 70 },
+  { id: "utility", label: "Utility", color: "#fb923c", w: 70, h: 60 },
 ];
 
 const FEATURES = [
@@ -160,8 +160,24 @@ function BlueprintCanvas({ rooms, setRooms, selectedId, setSelectedId }) {
   const drag = useRef(null);
   const resize = useRef(null);
 
+  const onMouseUp = useCallback(() => {
+    drag.current = null;
+    resize.current = null;
+  }, []);
+
+  useEffect(() => {
+    window.addEventListener("mouseup", onMouseUp);
+    window.addEventListener("blur", onMouseUp);
+    return () => {
+      window.removeEventListener("mouseup", onMouseUp);
+      window.removeEventListener("blur", onMouseUp);
+    };
+  }, [onMouseUp]);
+
   const onRoomMouseDown = useCallback((e, id, mode) => {
+    e.preventDefault();
     e.stopPropagation();
+    if (!ref.current) return;
     setSelectedId(id);
     const rect = ref.current.getBoundingClientRect();
     const room = rooms.find((r) => r.id === id);
@@ -176,27 +192,27 @@ function BlueprintCanvas({ rooms, setRooms, selectedId, setSelectedId }) {
   const onMouseMove = useCallback((e) => {
     const rect = ref.current?.getBoundingClientRect();
     if (!rect) return;
-    if (drag.current) {
+    const dragState = drag.current;
+    if (dragState) {
       const mx = e.clientX - rect.left;
       const my = e.clientY - rect.top;
       setRooms((prev) => prev.map((r) =>
-        r.id === drag.current.id
-          ? { ...r, x: clamp(snap(mx - drag.current.ox), 0, rect.width - r.w), y: clamp(snap(my - drag.current.oy), 0, rect.height - r.h) }
+        r.id === dragState.id
+          ? { ...r, x: clamp(snap(mx - dragState.ox), 0, rect.width - r.w), y: clamp(snap(my - dragState.oy), 0, rect.height - r.h) }
           : r
       ));
     }
-    if (resize.current) {
-      const dx = e.clientX - resize.current.ox;
-      const dy = e.clientY - resize.current.oy;
+    const resizeState = resize.current;
+    if (resizeState) {
+      const dx = e.clientX - resizeState.ox;
+      const dy = e.clientY - resizeState.oy;
       setRooms((prev) => prev.map((r) =>
-        r.id === resize.current.id
-          ? { ...r, w: clamp(snap(resize.current.ow + dx), 50, 500), h: clamp(snap(resize.current.oh + dy), 40, 400) }
+        r.id === resizeState.id
+          ? { ...r, w: clamp(snap(resizeState.ow + dx), 50, 500), h: clamp(snap(resizeState.oh + dy), 40, 400) }
           : r
       ));
     }
   }, [setRooms]);
-
-  const onMouseUp = () => { drag.current = null; resize.current = null; };
   const area = useMemo(() => rooms.reduce((s, r) => s + Math.round(r.w * r.h / 929), 0), [rooms]);
 
   return (
@@ -210,12 +226,13 @@ function BlueprintCanvas({ rooms, setRooms, selectedId, setSelectedId }) {
         position: "relative",
         overflow: "hidden",
         cursor: "default",
+        userSelect: "none",
         backgroundImage: [
-          "linear-gradient(rgba(94,207,177,0.05) 1px, transparent 1px)",
-          "linear-gradient(90deg, rgba(94,207,177,0.05) 1px, transparent 1px)",
-          "radial-gradient(circle at 18% 82%, rgba(12, 52, 38, 0.7) 0%, transparent 55%)",
-          "radial-gradient(circle at 78% 18%, rgba(18, 64, 49, 0.45) 0%, transparent 52%)",
-          "linear-gradient(160deg, rgba(8,16,12,0.96), rgba(12,24,18,0.96))",
+          "linear-gradient(rgba(214,220,226,0.35) 1px, transparent 1px)",
+          "linear-gradient(90deg, rgba(214,220,226,0.35) 1px, transparent 1px)",
+          "radial-gradient(circle at 18% 82%, rgba(154, 162, 170, 0.2) 0%, transparent 55%)",
+          "radial-gradient(circle at 78% 18%, rgba(196, 202, 208, 0.12) 0%, transparent 52%)",
+          "linear-gradient(160deg, rgba(176,183,191,0.96), rgba(196,203,211,0.96))",
         ].join(","),
         backgroundSize: "40px 40px, 40px 40px, 100% 100%, 100% 100%, 100% 100%",
         backgroundColor: T.bg,
@@ -238,23 +255,27 @@ function BlueprintCanvas({ rooms, setRooms, selectedId, setSelectedId }) {
           <div
             key={room.id}
             onMouseDown={(e) => onRoomMouseDown(e, room.id, "drag")}
+            onDragStart={(e) => e.preventDefault()}
             style={{
               position: "absolute",
               left: room.x,
               top: room.y,
               width: room.w,
               height: room.h,
-              border: `${sel ? 2 : 1}px solid ${sel ? T.accent : "rgba(94,207,177,0.55)"}`,
-              background: sel ? "rgba(94,207,177,0.16)" : "rgba(10, 24, 18, 0.72)",
+              border: `${sel ? 2 : 1}px solid ${sel ? room.color : `${room.color}dd`}`,
+              background: sel ? `${room.color}88` : `${room.color}66`,
               cursor: "grab",
               userSelect: "none",
-              boxShadow: sel ? "0 0 0 1px rgba(94,207,177,0.35), inset 0 0 28px rgba(94,207,177,0.18)" : "none",
+              WebkitUserSelect: "none",
+              WebkitUserDrag: "none",
+              touchAction: "none",
+              boxShadow: sel ? `0 0 0 1px ${room.color}99, inset 0 0 22px ${room.color}66` : "none",
             }}
           >
-            <div style={{ position: "absolute", top: 7, left: 9, right: 20, fontFamily: "'Outfit',sans-serif", fontSize: 14, letterSpacing: "0.13em", textTransform: "uppercase", color: T.text, overflow: "hidden", whiteSpace: "nowrap", textOverflow: "ellipsis" }}>
+            <div style={{ position: "absolute", top: 7, left: 9, right: 20, fontFamily: "'Outfit',sans-serif", fontSize: 14, letterSpacing: "0.13em", textTransform: "uppercase", color: "#102017", overflow: "hidden", whiteSpace: "nowrap", textOverflow: "ellipsis" }}>
               {room.label}
             </div>
-            <div style={{ position: "absolute", bottom: 5, left: 9, fontFamily: "'Outfit',sans-serif", fontSize: 11, letterSpacing: "0.08em", color: T.textFaint }}>
+            <div style={{ position: "absolute", bottom: 5, left: 9, fontFamily: "'Outfit',sans-serif", fontSize: 11, letterSpacing: "0.08em", color: "rgba(16,32,23,0.75)" }}>
               {room.w}×{room.h}
             </div>
             <div
@@ -266,7 +287,7 @@ function BlueprintCanvas({ rooms, setRooms, selectedId, setSelectedId }) {
               style={{ position: "absolute", right: 0, bottom: 0, width: 14, height: 14, cursor: "se-resize" }}
             >
               <svg width={8} height={8} style={{ position: "absolute", right: 2, bottom: 2 }}>
-                <path d="M0 8 L8 0 M4 8 L8 4" stroke={T.accent} strokeWidth={1} opacity={0.8} />
+                <path d="M0 8 L8 0 M4 8 L8 4" stroke={room.color} strokeWidth={1} opacity={0.95} />
               </svg>
             </div>
           </div>
@@ -290,10 +311,10 @@ export default function NovaBay() {
   const [activeTab, setActiveTab] = useState("blueprint");
   const [activeStyle, setActiveStyle] = useState(STYLES[0]);
   const [rooms, setRooms] = useState([
-    { id: uid(), type: "living", label: "Living Room", color: "#5ecfb1", x: 60, y: 55, w: 180, h: 130 },
-    { id: uid(), type: "kitchen", label: "Kitchen", color: "#72d7be", x: 260, y: 55, w: 120, h: 100 },
-    { id: uid(), type: "bedroom", label: "Master Bedroom", color: "#4ec0a4", x: 60, y: 205, w: 140, h: 115 },
-    { id: uid(), type: "deck", label: "Deck/Lanai", color: "#91dfcd", x: 260, y: 165, w: 160, h: 75 },
+    { id: uid(), type: "living", label: "Living Room", color: "#60a5fa", x: 60, y: 55, w: 180, h: 130 },
+    { id: uid(), type: "kitchen", label: "Kitchen", color: "#f87171", x: 260, y: 55, w: 120, h: 100 },
+    { id: uid(), type: "bedroom", label: "Master Bedroom", color: "#c084fc", x: 60, y: 205, w: 140, h: 115 },
+    { id: uid(), type: "deck", label: "Deck/Lanai", color: "#4ade80", x: 260, y: 165, w: 160, h: 75 },
   ]);
   const [selectedId, setSelectedId] = useState(null);
   const [features, setFeatures] = useState(new Set(["elevated", "impact", "seawall"]));

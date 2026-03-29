@@ -140,7 +140,7 @@ function Home() {
           </h1>
         </div>
         <p className="brand-tagline">
-          Build Smarter. Build <em>Safer.</em>
+          Build <em>Smarter.</em> Build <em>Safer.</em>
         </p>
         <p className="brand-desc">
           NovaBay analyzes flood risk, GIS data, and building materials to help
@@ -182,7 +182,7 @@ function Home() {
 
       <section className="bottom-bar" aria-label="Platform statistics" ref={bottomBarRef}>
         <article className="stat-block">
-          <span className="stat-num" data-target="2400" data-suffix="+">0</span>
+          <span className="stat-num" data-target="25000" data-suffix="+">0</span>
           <span className="stat-label">Parcels Analyzed</span>
         </article>
         <article className="stat-block">
@@ -190,12 +190,12 @@ function Home() {
           <span className="stat-label">Zone Coverage</span>
         </article>
         <article className="stat-block">
-          <span className="stat-num" data-target="12" data-suffix=" yrs">0</span>
-          <span className="stat-label">Industry Experience</span>
+          <span className="stat-num">Anthropic AI</span>
+          <span className="stat-label">Modelling</span>
         </article>
         <article className="stat-block">
-          <span className="stat-num" data-target="98" data-suffix="%">0</span>
-          <span className="stat-label">Accuracy Rate</span>
+          <span className="stat-num">MapLibre</span>
+          <span className="stat-label">Geo Location</span>
         </article>
       </section>
 

@@ -1,4 +1,4 @@
-import { createClient } from '@supabase/supabase-client'
+import { createClient } from '@supabase/supabase-js'
 
 // These should match the keys in your .env file
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
