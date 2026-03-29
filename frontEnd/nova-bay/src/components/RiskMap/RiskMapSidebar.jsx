@@ -1,6 +1,6 @@
 import React from 'react'
 
-function RiskMapSidebar({ selectedParcel, onAnalyzeClick }) {
+function RiskMapSidebar({ selectedParcel, report, isAnalyzing, onAnalyzeClick }) {
   return (
     <aside className="analyze-sidebar">
       {/* LOCATION SECTION */}
@@ -23,28 +23,30 @@ function RiskMapSidebar({ selectedParcel, onAnalyzeClick }) {
         )}
       </section>
 
-      {/* MATERIALS SECTION */}
-      <section className="sidebar-section">
-        <h2 className="section-label">MATERIALS</h2>
-        {!selectedParcel ? (
-          <div className="placeholder-card placeholder-disabled">
-            <span className="placeholder-icon icon-materials">⬡</span>
-            <p>Location required first</p>
-          </div>
-        ) : (
-          <div className="data-card waiting">
-            <p>AI analyzing building codes...</p>
-          </div>
-        )}
-      </section>
-
-      {/* ANALYSIS SECTION */}
+      {/* MATERIALS & ANALYSIS SECTION */}
       <section className="sidebar-section">
         <h2 className="section-label">RESILIENCE ANALYSIS</h2>
         {!selectedParcel ? (
           <div className="placeholder-card placeholder-waiting">
             <span className="placeholder-icon icon-analysis">◈</span>
             <p>Awaiting input</p>
+          </div>
+        ) : isAnalyzing ? (
+          <div className="data-card loading-state">
+             {/* You can add a CSS spinner here */}
+             <p>Consulting NovaBay AI Agent...</p>
+          </div>
+        ) : report ? (
+          <div className="report-container">
+            <div className="ai-report-text">
+              {/* Using white-space pre-wrap to preserve AI formatting */}
+              <p style={{ whiteSpace: 'pre-wrap', fontSize: '0.9rem', lineHeight: '1.5' }}>
+                {report}
+              </p>
+            </div>
+            <button className="secondary-btn" onClick={() => window.print()} style={{marginTop: '15px'}}>
+              Download Report
+            </button>
           </div>
         ) : (
           <button className="analyze-trigger-btn" onClick={onAnalyzeClick}>

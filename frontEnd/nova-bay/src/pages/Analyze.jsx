@@ -1,22 +1,48 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import MapView from '../components/Map/MapView'
-import RiskMapSidebar from '../components/RiskMap/RiskMapSidebar' // Make sure this path is correct
+import RiskMapSidebar from '../components/RiskMap/RiskMapSidebar'
+import { supabase } from '../supabaseClient' // Ensure this path is correct
 import './Analyze.css'
 
 function Analyze() {
-  // NEW: This state holds the parcel data when you click on the map
   const [selectedParcel, setSelectedParcel] = useState(null)
+  const [report, setReport] = useState(null) // NEW: Holds AI text
+  const [isAnalyzing, setIsAnalyzing] = useState(false) // NEW: Loading state
   const navigate = useNavigate()
 
+  // Reset the report whenever a user clicks a new property
   useEffect(() => {
-    // Tarik's original resize logic to fix map alignment on load
+    setReport(null)
+  }, [selectedParcel])
+
+  useEffect(() => {
     const resizeTimer = setTimeout(() => {
       window.dispatchEvent(new Event('resize'))
     }, 100)
-
     return () => clearTimeout(resizeTimer)
   }, [])
+
+  // NEW: Function to trigger the Anthropic AI Agent
+  const handleAIAnalysis = async () => {
+    if (!selectedParcel) return
+    
+    setIsAnalyzing(true)
+    try {
+      const { data, error } = await supabase.functions.invoke('resilience-agent', {
+        body: { folio: selectedParcel.folio }
+      })
+
+      if (error) throw error
+      
+      // Anthropic API returns content in an array format
+      setReport(data.content[0].text)
+    } catch (err) {
+      console.error("AI Analysis failed:", err)
+    } finally {
+      setIsAnalyzing(false)
+    }
+  }
 
   return (
     <div className="analyze-page">
@@ -36,14 +62,16 @@ function Analyze() {
         </div>
       </header>
 
-      {/* NEW: Using the standalone Sidebar component and passing it the data */}
+      {/* Passing the new AI states and trigger function as props */}
       <RiskMapSidebar 
         selectedParcel={selectedParcel} 
+        report={report}
+        isAnalyzing={isAnalyzing}
+        onAnalyzeClick={handleAIAnalysis}
       />
 
       <div className="analyze-main">
         <main className="analyze-map-area">
-          {/* NEW: Passing the setter function so the map can "send" data back up */}
           <MapView onParcelSelect={setSelectedParcel} />
         </main>
       </div>

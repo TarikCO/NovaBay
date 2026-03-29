@@ -26,3 +26,7 @@ Thumbs.db
 # Node (if you installed the CLI at the root)
 node_modules/
 dist/
+
+# Supabase Local Secrets
+.env.local
+supabase/.env.local
