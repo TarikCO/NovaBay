@@ -15,6 +15,32 @@
   background: #0b1f1a;
 }
 
+body.home-map-active {
+  overflow: hidden;
+}
+
+.home-page.map-active {
+  height: 100vh;
+  min-height: 100vh;
+  overflow: hidden;
+}
+
+.home-page.map-active .hero-section {
+  position: fixed;
+  inset: 0;
+}
+
+.home-page.map-active .info-section,
+.home-page.map-active .cta-section {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  height: 0;
+  overflow: hidden;
+  padding-top: 0;
+  padding-bottom: 0;
+}
+
 .hero-section {
   position: relative;
   height: 100vh;
@@ -741,6 +767,19 @@
 /* State: Hero transitioning to map */
 .home-page.hero-transitioning .hero-map-bg {
   animation: bg-zoom-darken 0.9s cubic-bezier(0.4, 0, 0.2, 1) 0.3s forwards;
+}
+
+.home-page.hero-transitioning .hero-overlay {
+  animation: fade-exit 0.6s ease-in 0.5s forwards;
+}
+
+.home-page.map-active .wave-strip,
+.home-page.map-active .location-tag,
+.home-page.map-active .scroll-hint,
+.home-page.map-active .bottom-bar,
+.home-page.map-active .home-nav,
+.home-page.map-active .home-main {
+  pointer-events: none;
 }
 
 .home-page.hero-transitioning .pre-rule {

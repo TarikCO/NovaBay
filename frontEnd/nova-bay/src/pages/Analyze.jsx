@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import MapView from '../components/Map/MapView'
+import RiskMapSidebar from '../components/RiskMap/RiskMapSidebar'
 import './Analyze.css'
 
 function Analyze() {
@@ -35,34 +36,12 @@ function Analyze() {
       </header>
 
       <aside className="analyze-sidebar">
-        <section className="sidebar-section">
-          <h2 className="section-label">LOCATION</h2>
-          <div className="placeholder-card">
-            <span className="placeholder-icon icon-location">◎</span>
-            <p>Drop a pin on the map to begin</p>
-          </div>
-        </section>
-
-        <section className="sidebar-section">
-          <h2 className="section-label">MATERIALS</h2>
-          <div className="placeholder-card placeholder-disabled">
-            <span className="placeholder-icon icon-materials">⬡</span>
-            <p>Location required first</p>
-          </div>
-        </section>
-
-        <section className="sidebar-section">
-          <h2 className="section-label">ANALYSIS</h2>
-          <div className="placeholder-card placeholder-waiting">
-            <span className="placeholder-icon icon-analysis">◈</span>
-            <p>Awaiting input</p>
-          </div>
-        </section>
+        <RiskMapSidebar />
       </aside>
 
       <div className="analyze-main">
         <main className="analyze-map-area">
-          <MapView />
+          <MapView mapId="risk-map" />
         </main>
       </div>
     </div>
