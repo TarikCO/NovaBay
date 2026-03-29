@@ -1,90 +1,69 @@
 import { useEffect, useState } from 'react'
-import maplibregl from 'maplibre-gl'
+import DeckGL from '@deck.gl/react'
+import { GeoJsonLayer } from '@deck.gl/layers'
+import { Map } from 'maplibre-gl'
+import { supabase } from '../../supabaseClient' // Adjust path as needed
 import 'maplibre-gl/dist/maplibre-gl.css'
 import './MapView.css'
 
+const INITIAL_VIEW_STATE = {
+  longitude: -82.4572,
+  latitude: 27.9506,
+  zoom: 11,
+  pitch: 0,
+  bearing: 0
+}
+
 function MapView() {
-  const [isLoading, setIsLoading] = useState(true)
+  const [parcels, setParcels] = useState(null)
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    const tampaCenter = [-82.4572, 27.9506]
-
-    const map = new maplibregl.Map({
-      container: 'map',
-      style: 'https://tiles.stadiamaps.com/styles/alidade_smooth_dark.json',
-      center: tampaCenter,
-      zoom: 11,
-      maxBounds: [[-83.5, 27.2], [-81.8, 28.5]],
-      minZoom: 9,
-      maxZoom: 18,
-      pitch: 0,
-      bearing: 0,
-    })
-
-    map.addControl(new maplibregl.NavigationControl(), 'bottom-right')
-    map.addControl(
-      new maplibregl.GeolocateControl({
-        positionOptions: {
-          enableHighAccuracy: true,
-        },
-        trackUserLocation: true,
-      }),
-      'bottom-right',
-    )
-    map.addControl(new maplibregl.ScaleControl({ unit: 'imperial' }), 'bottom-left')
-    map.dragRotate.disable()
-
-    map.jumpTo({ center: tampaCenter, zoom: 8, pitch: 0, bearing: 0 })
-
-    const handleLoad = () => {
-      setIsLoading(false)
-
-      map.flyTo({
-        center: tampaCenter,
-        zoom: 11,
-        pitch: 0,
-        bearing: 0,
-        duration: 2000,
-        essential: true,
-      })
-
-      setTimeout(() => {
-        map.resize()
-      }, 100)
+    async function loadData() {
+      // Call the SQL function we just created
+      const { data, error } = await supabase.rpc('get_parcels_geojson')
+      if (!error) setParcels(data)
+      setLoading(false)
     }
-
-    map.on('load', handleLoad)
-
-    let activeMarker = null
-
-    map.on('click', (event) => {
-      const { lng, lat } = event.lngLat
-      console.log('Clicked coordinates:', { lng, lat })
-
-      if (activeMarker) {
-        activeMarker.remove()
-      }
-
-      const markerElement = document.createElement('div')
-      markerElement.className = 'map-marker'
-      markerElement.innerHTML = '<span class="map-marker-core"></span><span class="map-marker-pulse"></span>'
-
-      activeMarker = new maplibregl.Marker({ element: markerElement, anchor: 'center' })
-        .setLngLat([lng, lat])
-        .addTo(map)
-    })
-
-    return () => {
-      map.off('load', handleLoad)
-      map.remove()
-    }
+    loadData()
   }, [])
+
+  const layers = [
+    new GeoJsonLayer({
+      id: 'parcels-layer',
+      data: parcels,
+      pickable: true,
+      stroked: true,
+      filled: true,
+      extruded: false,
+      lineWidthMinPixels: 1,
+      getFillColor: [31, 192, 216, 100], // Matches your --color-accent
+      getLineColor: [255, 255, 255, 150],
+      getLineWidth: 1,
+      onClick: (info) => {
+        if (info.object) {
+          console.log('Parcel Data:', info.object.properties)
+          // Here is where you will trigger the AI Analysis using the folio
+        }
+      }
+    })
+  ]
 
   return (
     <div className="map-view">
-      {isLoading && <div className="map-loading">Loading map...</div>}
-      <div id="map" />
-      <div className="map-hint">Click to drop a pin · Scroll to zoom</div>
+      {loading && <div className="map-loading">Querying 30,000 Parcels...</div>}
+      <DeckGL
+        initialViewState={INITIAL_VIEW_STATE}
+        controller={true}
+        layers={layers}
+        getCursor={({isHovering}) => isHovering ? 'pointer' : 'grab'}
+      >
+        <Map 
+          mapStyle="https://tiles.stadiamaps.com/styles/alidade_smooth_dark.json" 
+          attributionControl={false}
+        />
+      </DeckGL>
+      <div className="map-hint">Click a parcel to analyze resilience</div>
     </div>
   )
 }
