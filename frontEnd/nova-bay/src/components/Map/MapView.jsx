@@ -14,19 +14,28 @@ const INITIAL_VIEW_STATE = {
   bearing: 0
 }
 
-function MapView({ mapId = 'risk-map' }) {
+// Added onParcelSelect prop to communicate with the Sidebar
+function MapView({ mapId = 'risk-map', onParcelSelect }) {
   const [parcels, setParcels] = useState(null)
+  const [floodZones, setFloodZones] = useState(null) // FLOOD ZONE ADDITION: New state
   const [loading, setLoading] = useState(true)
   const mapRef = useRef(null)
 
-  // 1. Your Data Engine: Fetch the 30k parcels from Supabase
+  // 1. Your Data Engine: Updated to fetch both parcels and flood zones
   useEffect(() => {
-    async function loadData() {
-      const { data, error } = await supabase.rpc('get_parcels_geojson')
-      if (!error) setParcels(data)
+    async function loadMapData() {
+      // Parallel fetch to load both layers simultaneously for better performance
+      const [parcelRes, floodRes] = await Promise.all([
+        supabase.rpc('get_parcels_geojson'),
+        supabase.rpc('get_flood_zones_geojson') // FLOOD ZONE ADDITION: Fetching risk data
+      ])
+      
+      if (!parcelRes.error) setParcels(parcelRes.data)
+      if (!floodRes.error) setFloodZones(floodRes.data) // FLOOD ZONE ADDITION: Storing data
+      
       setLoading(false)
     }
-    loadData()
+    loadMapData()
   }, [])
 
   // 2. Tarik's Transition Logic: Handles the "Fly In" from the Home Page
@@ -42,6 +51,17 @@ function MapView({ mapId = 'risk-map' }) {
   }, [mapId])
 
   const layers = [
+    // FLOOD ZONE ADDITION: The risk polygons layer (placed first so it's beneath parcels)
+    new GeoJsonLayer({
+      id: 'flood-zones-layer',
+      data: floodZones,
+      filled: true,
+      getFillColor: (f) => f.properties.zone_name === 'X' 
+        ? [46, 204, 113, 80] // Green-ish for moderate risk (Zone X)
+        : [231, 76, 60, 80],  // Red-ish for high risk (AE/VE zones)
+      pickable: false, // We don't need to click the flood zones themselves
+    }),
+
     new GeoJsonLayer({
       id: 'parcels-layer',
       data: parcels,
@@ -54,7 +74,8 @@ function MapView({ mapId = 'risk-map' }) {
       onClick: (info) => {
         if (info.object) {
           console.log('Parcel Data:', info.object.properties)
-          // This folio is what Tarik's AI logic will use later
+          // NEW: Triggers the sidebar update in Analyze.jsx
+          if (onParcelSelect) onParcelSelect(info.object.properties)
         }
       }
     })
@@ -62,7 +83,7 @@ function MapView({ mapId = 'risk-map' }) {
 
   return (
     <div className="map-view">
-      {loading && <div className="map-loading">Querying 30,000 Parcels...</div>}
+      {loading && <div className="map-loading">Querying GIS Records...</div>}
       
       <DeckGL
         initialViewState={INITIAL_VIEW_STATE}
@@ -75,7 +96,6 @@ function MapView({ mapId = 'risk-map' }) {
           mapStyle="https://tiles.stadiamaps.com/styles/alidade_smooth_dark.json" 
           attributionControl={false}
         >
-          {/* Tarik's UI Controls */}
           <NavigationControl position="bottom-right" />
           <GeolocateControl position="bottom-right" />
           <ScaleControl position="bottom-left" />

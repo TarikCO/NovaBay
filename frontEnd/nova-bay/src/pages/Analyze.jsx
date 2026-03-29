@@ -1,15 +1,16 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import MapView from '../components/Map/MapView'
-import RiskMapSidebar from '../components/RiskMap/RiskMapSidebar'
+import RiskMapSidebar from '../components/Sidebar/RiskMapSidebar' // Make sure this path is correct
 import './Analyze.css'
 
 function Analyze() {
+  // NEW: This state holds the parcel data when you click on the map
+  const [selectedParcel, setSelectedParcel] = useState(null)
   const navigate = useNavigate()
 
   useEffect(() => {
-    // MapView encapsulates the MapLibre instance; trigger a resize after mount
-    // so the map recalculates inside the padded rounded dashboard container.
+    // Tarik's original resize logic to fix map alignment on load
     const resizeTimer = setTimeout(() => {
       window.dispatchEvent(new Event('resize'))
     }, 100)
@@ -35,13 +36,15 @@ function Analyze() {
         </div>
       </header>
 
-      <aside className="analyze-sidebar">
-        <RiskMapSidebar />
-      </aside>
+      {/* NEW: Using the standalone Sidebar component and passing it the data */}
+      <RiskMapSidebar 
+        selectedParcel={selectedParcel} 
+      />
 
       <div className="analyze-main">
         <main className="analyze-map-area">
-          <MapView mapId="risk-map" />
+          {/* NEW: Passing the setter function so the map can "send" data back up */}
+          <MapView onParcelSelect={setSelectedParcel} />
         </main>
       </div>
     </div>
