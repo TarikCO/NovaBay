@@ -1,30 +1,24 @@
 :root {
-  /* Backgrounds - deep coastal navy */
-  --color-bg: #0b1523;
-  --color-surface: #111f35;
-  --color-surface-2: #162840;
-  --color-border: #1e3a52;
-  --color-border-soft: #162d42;
-
-  /* Accent - glowing aqua/cyan */
-  --color-accent: #2abfbf;
-  --color-accent-bright: #3ef0d0;
-  --color-accent-soft: #7fffd4;
-  --color-accent-dim: #1a7a7a;
-
-  /* Water tones */
-  --color-water-1: #2abfbf;
-  --color-water-2: #3ef0d0;
-  --color-water-3: #1a9090;
-
-  /* Blue-purple cliff shadows */
-  --color-deep: #1e2d5a;
-  --color-deep-2: #2d3f7a;
-
-  /* Text */
+  /* Reference palette from the bayshore hero artwork */
+  --color-bg: #0a1628;
+  --color-surface: #10233d;
+  --color-surface-2: #143255;
+  --color-border: #25537f;
+  --color-border-soft: #173a5c;
+  --color-accent: #1fc0d8;
+  --color-accent-bright: #3dd8c8;
+  --color-accent-soft: #7ee9df;
+  --color-accent-dim: #0f7b93;
+  --color-warm: #ffd764;
+  --color-warm-soft: #ffc04d;
+  --color-water-1: #1aadcc;
+  --color-water-2: #18c8d8;
+  --color-water-3: #0a7090;
+  --color-deep: #1a3a7a;
+  --color-deep-2: #1e6090;
   --color-text-primary: #e8f4f8;
-  --color-text-secondary: #8ab4c8;
-  --color-text-muted: #4a7a90;
+  --color-text-secondary: #a2d4df;
+  --color-text-muted: #5d9db1;
 }
 
 * {
@@ -43,7 +37,7 @@ body,
 body {
   background: var(--color-bg);
   color: var(--color-text-primary);
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-family: 'Manrope', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   line-height: 1.4;
 }
 

@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NovaBay</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600&family=Outfit:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --teal: #5ECFB1;
+  --teal-glow: rgba(94, 207, 177, 0.35);
+  --white: #f5f7f6;
+  --offwhite: rgba(245, 247, 246, 0.72);
+  --offwhite-dim: rgba(245, 247, 246, 0.40);
+  --dark: #050f0c;
+}
+
+html, body { width: 100%; height: 100%; overflow: hidden; font-family: 'Outfit', sans-serif; }
+
+/* Real Tampa Bay satellite via Esri public imagery */
+.bg {
+  position: fixed; inset: 0;
+  background: url('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/10/392/280') center/cover no-repeat;
+  background-color: #0b1f1a;
+  animation: slowDrift 30s ease-in-out infinite alternate;
+  filter: brightness(0.50) saturate(0.82);
+}
+@keyframes slowDrift {
+  0%   { transform: scale(1.04) translate(0,0); }
+  100% { transform: scale(1.08) translate(-1.2%,-0.6%); }
+}
+
+.overlay {
+  position: fixed; inset: 0; z-index: 1;
+  background: linear-gradient(
+    to top,
+    rgba(5,16,12,0.95) 0%,
+    rgba(5,16,12,0.52) 38%,
+    rgba(5,16,12,0.08) 62%,
+    rgba(5,16,12,0.30) 100%
+  );
+}
+
+/* Nav */
+nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 50;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 32px 56px;
+  opacity: 0; animation: fadeIn 1.1s 0.2s ease forwards;
+}
+.logo-mark { display: flex; align-items: center; gap: 12px; }
+.logo-ring {
+  width: 34px; height: 34px; border-radius: 50%;
+  border: 1.5px solid var(--teal);
+  display: grid; place-items: center;
+  position: relative;
+}
+.logo-ring::after {
+  content: ''; width: 9px; height: 9px; border-radius: 50%;
+  background: var(--teal); box-shadow: 0 0 10px var(--teal-glow);
+  animation: corePulse 2.5s ease-in-out infinite;
+}
+@keyframes corePulse {
+  0%,100% { box-shadow: 0 0 10px var(--teal-glow); }
+  50%      { box-shadow: 0 0 22px var(--teal-glow); }
+}
+.logo-text {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.22rem; font-weight: 600;
+  letter-spacing: .16em; text-transform: uppercase;
+  color: var(--white);
+}
+.nav-links { display: flex; gap: 34px; list-style: none; }
+.nav-links a {
+  font-size: .75rem; letter-spacing: .1em; text-transform: uppercase;
+  color: var(--offwhite-dim); text-decoration: none;
+  transition: color .3s;
+  position: relative; padding-bottom: 2px;
+}
+.nav-links a::after {
+  content: ''; position: absolute; bottom: 0; left: 0; right: 0;
+  height: 1px; background: var(--teal);
+  transform: scaleX(0); transform-origin: left; transition: transform .3s;
+}
+.nav-links a:hover { color: var(--white); }
+.nav-links a:hover::after { transform: scaleX(1); }
+.nav-cta {
+  font-size: .73rem; letter-spacing: .13em; text-transform: uppercase;
+  color: var(--teal); border: 1px solid rgba(94,207,177,0.4);
+  padding: 9px 22px; border-radius: 2px;
+  text-decoration: none; transition: background .3s, color .3s;
+}
+.nav-cta:hover { background: var(--teal); color: var(--dark); }
+
+/* Hero center */
+main {
+  position: fixed; inset: 0; z-index: 10;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+}
+
+.pre-rule {
+  width: 0; height: 1px; background: var(--teal);
+  margin-bottom: 24px;
+  animation: expandRule 0.9s 0.5s ease forwards;
+}
+@keyframes expandRule {
+  to { width: 44px; }
+}
+
+.brand {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(5rem, 11vw, 9rem);
+  font-weight: 300; letter-spacing: .32em; text-transform: uppercase;
+  color: var(--white); line-height: 1;
+  opacity: 0; animation: riseIn 1.1s 0.65s cubic-bezier(.16,1,.3,1) forwards;
+}
+
+.tagline {
+  margin-top: 16px;
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(1rem, 2.2vw, 1.5rem);
+  font-weight: 300; letter-spacing: .36em; text-transform: uppercase;
+  color: var(--offwhite-dim);
+  opacity: 0; animation: riseIn 1.1s 0.85s cubic-bezier(.16,1,.3,1) forwards;
+}
+.tagline em { font-style: normal; color: var(--teal); }
+
+.desc {
+  margin-top: 34px; max-width: 400px; text-align: center;
+  font-size: .87rem; font-weight: 300; line-height: 1.8;
+  color: var(--offwhite-dim); letter-spacing: .015em;
+  opacity: 0; animation: riseIn 1.1s 1.05s cubic-bezier(.16,1,.3,1) forwards;
+}
+
+.cta-row {
+  margin-top: 42px; display: flex; gap: 14px; align-items: center;
+  opacity: 0; animation: riseIn 1.1s 1.25s cubic-bezier(.16,1,.3,1) forwards;
+}
+.btn-main {
+  font-family: 'Outfit', sans-serif;
+  font-size: .75rem; letter-spacing: .17em; text-transform: uppercase;
+  color: var(--dark); background: var(--teal);
+  border: none; border-radius: 2px; padding: 15px 38px; cursor: pointer;
+  box-shadow: 0 4px 28px rgba(94,207,177,0.22);
+  transition: transform .2s, box-shadow .3s;
+}
+.btn-main:hover { transform: translateY(-2px); box-shadow: 0 8px 36px rgba(94,207,177,0.38); }
+.btn-ghost {
+  font-family: 'Outfit', sans-serif;
+  font-size: .75rem; letter-spacing: .17em; text-transform: uppercase;
+  color: var(--offwhite); background: transparent;
+  border: 1px solid rgba(245,247,246,0.2); border-radius: 2px;
+  padding: 14px 28px; cursor: pointer;
+  transition: border-color .3s, color .3s;
+}
+.btn-ghost:hover { border-color: var(--teal); color: var(--teal); }
+
+@keyframes riseIn {
+  from { opacity: 0; transform: translateY(22px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+/* Animated wave line */
+.wave-strip {
+  position: fixed; bottom: 96px; left: 0; right: 0; z-index: 3;
+  height: 40px; pointer-events: none; overflow: hidden;
+}
+.wave-strip svg { width: 200%; height: 100%; animation: wavePan 18s linear infinite; }
+@keyframes wavePan { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
+
+/* Bottom bar */
+.bottom-bar {
+  position: fixed; bottom: 0; left: 0; right: 0; z-index: 20;
+  display: flex;
+  opacity: 0; animation: fadeIn 1s 1.6s ease forwards;
+}
+.stat-block {
+  flex: 1; padding: 20px 44px;
+  border-top: 1px solid rgba(245,247,246,0.07);
+  border-right: 1px solid rgba(245,247,246,0.05);
+  backdrop-filter: blur(22px) saturate(1.3);
+  background: rgba(5,16,12,0.58);
+  display: flex; flex-direction: column; gap: 3px;
+  position: relative; overflow: hidden;
+  transition: background .4s;
+}
+.stat-block:last-child { border-right: none; }
+.stat-block:hover { background: rgba(94,207,177,0.05); }
+.stat-block::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0;
+  height: 1px; background: var(--teal);
+  transform: scaleX(0); transform-origin: left;
+  transition: transform .5s ease;
+}
+.stat-block:hover::before { transform: scaleX(1); }
+.stat-num {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.65rem; color: var(--white); letter-spacing: .04em;
+}
+.stat-label {
+  font-size: .64rem; letter-spacing: .16em; text-transform: uppercase;
+  color: var(--offwhite-dim); font-weight: 300;
+}
+
+/* Location + scroll */
+.location-tag {
+  position: fixed; left: 56px; bottom: 110px; z-index: 30;
+  display: flex; align-items: center; gap: 9px;
+  opacity: 0; animation: fadeIn 1s 1.8s ease forwards;
+}
+.loc-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--teal); box-shadow: 0 0 8px var(--teal-glow);
+  animation: locPulse 2.5s ease-in-out infinite;
+}
+@keyframes locPulse {
+  0%,100% { box-shadow: 0 0 8px var(--teal-glow); }
+  50%      { box-shadow: 0 0 18px var(--teal-glow); }
+}
+.loc-text {
+  font-size: .63rem; letter-spacing: .2em; text-transform: uppercase;
+  color: var(--offwhite-dim);
+}
+
+.scroll-hint {
+  position: fixed; right: 48px; bottom: 110px; z-index: 30;
+  display: flex; flex-direction: column; align-items: center; gap: 10px;
+  opacity: 0; animation: fadeIn 1s 2s ease forwards;
+}
+.scroll-hint span {
+  font-size: .58rem; letter-spacing: .22em; text-transform: uppercase;
+  color: var(--offwhite-dim); writing-mode: vertical-rl;
+}
+.scroll-line {
+  width: 1px; height: 44px;
+  background: linear-gradient(to bottom, var(--teal), transparent);
+  animation: scrollDrop 2.2s ease-in-out infinite;
+}
+@keyframes scrollDrop {
+  0%   { transform: scaleY(0); transform-origin: top; opacity: 1; }
+  50%  { transform: scaleY(1); transform-origin: top; }
+  51%  { transform-origin: bottom; }
+  100% { transform: scaleY(0); transform-origin: bottom; opacity: 0.3; }
+}
+</style>
+</head>
+<body>
+
+<div class="bg"></div>
+<div class="overlay"></div>
+
+<nav>
+  <div class="logo-mark">
+    <div class="logo-ring"></div>
+    <span class="logo-text">NovaBay</span>
+  </div>
+  <ul class="nav-links">
+    <li><a href="#">Platform</a></li>
+    <li><a href="#">Risk Maps</a></li>
+    <li><a href="#">Projects</a></li>
+    <li><a href="#">About</a></li>
+  </ul>
+  <a href="#" class="nav-cta">Get Started</a>
+</nav>
+
+<main>
+  <div class="pre-rule"></div>
+  <h1 class="brand">NovaBay</h1>
+  <p class="tagline">Build Smarter. Build <em>Safer.</em></p>
+  <p class="desc">Flood risk intelligence, GIS analysis, and material guidance for Tampa Bay developers building structures that endure.</p>
+  <div class="cta-row">
+    <button class="btn-main">Analyze Your Project</button>
+    <button class="btn-ghost">Explore Risk Maps</button>
+  </div>
+</main>
+
+<!-- Animated shoreline wave -->
+<div class="wave-strip">
+  <svg viewBox="0 0 2880 40" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M0,20 C180,5 360,35 540,20 C720,5 900,35 1080,20 C1260,5 1440,35 1620,20 C1800,5 1980,35 2160,20 C2340,5 2520,35 2700,20 C2760,14 2820,24 2880,20"
+      fill="none" stroke="rgba(94,207,177,0.15)" stroke-width="1.5"/>
+    <path d="M0,26 C200,10 400,38 600,22 C800,8 1000,36 1200,22 C1400,8 1600,38 1800,22 C2000,8 2200,38 2400,22 C2600,8 2750,34 2880,24"
+      fill="none" stroke="rgba(94,207,177,0.07)" stroke-width="1"/>
+  </svg>
+</div>
+
+<div class="location-tag">
+  <div class="loc-dot"></div>
+  <span class="loc-text">Tampa Bay, Florida</span>
+</div>
+
+<div class="bottom-bar">
+  <div class="stat-block">
+    <span class="stat-num">2,400+</span>
+    <span class="stat-label">Parcels Analyzed</span>
+  </div>
+  <div class="stat-block">
+    <span class="stat-num">FEMA A–V</span>
+    <span class="stat-label">Zone Coverage</span>
+  </div>
+  <div class="stat-block">
+    <span class="stat-num">Real-Time</span>
+    <span class="stat-label">Storm Surge Data</span>
+  </div>
+  <div class="stat-block">
+    <span class="stat-num">98%</span>
+    <span class="stat-label">Accuracy Rate</span>
+  </div>
+</div>
+
+<div class="scroll-hint">
+  <div class="scroll-line"></div>
+  <span>Scroll</span>
+</div>
+
+</body>
+</html>
