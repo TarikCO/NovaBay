@@ -160,8 +160,23 @@ function BlueprintCanvas({ rooms, setRooms, selectedId, setSelectedId }) {
   const drag = useRef(null);
   const resize = useRef(null);
 
+  const onMouseUp = useCallback(() => {
+    drag.current = null;
+    resize.current = null;
+  }, []);
+
+  useEffect(() => {
+    window.addEventListener("mouseup", onMouseUp);
+    window.addEventListener("blur", onMouseUp);
+    return () => {
+      window.removeEventListener("mouseup", onMouseUp);
+      window.removeEventListener("blur", onMouseUp);
+    };
+  }, [onMouseUp]);
+
   const onRoomMouseDown = useCallback((e, id, mode) => {
     e.stopPropagation();
+    if (!ref.current) return;
     setSelectedId(id);
     const rect = ref.current.getBoundingClientRect();
     const room = rooms.find((r) => r.id === id);
@@ -176,27 +191,27 @@ function BlueprintCanvas({ rooms, setRooms, selectedId, setSelectedId }) {
   const onMouseMove = useCallback((e) => {
     const rect = ref.current?.getBoundingClientRect();
     if (!rect) return;
-    if (drag.current) {
+    const dragState = drag.current;
+    if (dragState) {
       const mx = e.clientX - rect.left;
       const my = e.clientY - rect.top;
       setRooms((prev) => prev.map((r) =>
-        r.id === drag.current.id
-          ? { ...r, x: clamp(snap(mx - drag.current.ox), 0, rect.width - r.w), y: clamp(snap(my - drag.current.oy), 0, rect.height - r.h) }
+        r.id === dragState.id
+          ? { ...r, x: clamp(snap(mx - dragState.ox), 0, rect.width - r.w), y: clamp(snap(my - dragState.oy), 0, rect.height - r.h) }
           : r
       ));
     }
-    if (resize.current) {
-      const dx = e.clientX - resize.current.ox;
-      const dy = e.clientY - resize.current.oy;
+    const resizeState = resize.current;
+    if (resizeState) {
+      const dx = e.clientX - resizeState.ox;
+      const dy = e.clientY - resizeState.oy;
       setRooms((prev) => prev.map((r) =>
-        r.id === resize.current.id
-          ? { ...r, w: clamp(snap(resize.current.ow + dx), 50, 500), h: clamp(snap(resize.current.oh + dy), 40, 400) }
+        r.id === resizeState.id
+          ? { ...r, w: clamp(snap(resizeState.ow + dx), 50, 500), h: clamp(snap(resizeState.oh + dy), 40, 400) }
           : r
       ));
     }
   }, [setRooms]);
-
-  const onMouseUp = () => { drag.current = null; resize.current = null; };
   const area = useMemo(() => rooms.reduce((s, r) => s + Math.round(r.w * r.h / 929), 0), [rooms]);
 
   return (
@@ -211,11 +226,11 @@ function BlueprintCanvas({ rooms, setRooms, selectedId, setSelectedId }) {
         overflow: "hidden",
         cursor: "default",
         backgroundImage: [
-          "linear-gradient(rgba(94,207,177,0.05) 1px, transparent 1px)",
-          "linear-gradient(90deg, rgba(94,207,177,0.05) 1px, transparent 1px)",
-          "radial-gradient(circle at 18% 82%, rgba(12, 52, 38, 0.7) 0%, transparent 55%)",
-          "radial-gradient(circle at 78% 18%, rgba(18, 64, 49, 0.45) 0%, transparent 52%)",
-          "linear-gradient(160deg, rgba(8,16,12,0.96), rgba(12,24,18,0.96))",
+          "linear-gradient(rgba(255,255,255,0.42) 1px, transparent 1px)",
+          "linear-gradient(90deg, rgba(255,255,255,0.42) 1px, transparent 1px)",
+          "radial-gradient(circle at 18% 82%, rgba(255, 255, 255, 0.12) 0%, transparent 55%)",
+          "radial-gradient(circle at 78% 18%, rgba(236, 239, 243, 0.1) 0%, transparent 52%)",
+          "linear-gradient(160deg, rgba(198,203,209,0.98), rgba(216,221,227,0.98))",
         ].join(","),
         backgroundSize: "40px 40px, 40px 40px, 100% 100%, 100% 100%, 100% 100%",
         backgroundColor: T.bg,
