@@ -1,109 +1,88 @@
 import { useEffect, useState, useRef } from 'react'
-import maplibregl from 'maplibre-gl'
+import DeckGL from '@deck.gl/react'
+import { GeoJsonLayer } from '@deck.gl/layers'
+import { Map, NavigationControl, GeolocateControl, ScaleControl } from 'react-map-gl/maplibre'
+import { supabase } from '../../supabaseClient'
 import 'maplibre-gl/dist/maplibre-gl.css'
 import './MapView.css'
 
+const INITIAL_VIEW_STATE = {
+  longitude: -82.4572,
+  latitude: 27.9506,
+  zoom: 11,
+  pitch: 0,
+  bearing: 0
+}
+
 function MapView({ mapId = 'risk-map' }) {
-  const [isLoading, setIsLoading] = useState(true)
-  const mapInstanceRef = useRef(null)
+  const [parcels, setParcels] = useState(null)
+  const [loading, setLoading] = useState(true)
+  const mapRef = useRef(null)
 
+  // 1. Your Data Engine: Fetch the 30k parcels from Supabase
   useEffect(() => {
-    const tampaCenter = [-82.4572, 27.9506]
-
-    const map = new maplibregl.Map({
-      container: mapId,
-      style: 'https://tiles.stadiamaps.com/styles/alidade_smooth_dark.json',
-      center: tampaCenter,
-      zoom: 11,
-      maxBounds: [[-83.5, 27.2], [-81.8, 28.5]],
-      minZoom: 9,
-      maxZoom: 18,
-      pitch: 0,
-      bearing: 0,
-    })
-
-    mapInstanceRef.current = map
-
-    map.addControl(new maplibregl.NavigationControl(), 'bottom-right')
-    map.addControl(
-      new maplibregl.GeolocateControl({
-        positionOptions: {
-          enableHighAccuracy: true,
-        },
-        trackUserLocation: true,
-      }),
-      'bottom-right',
-    )
-    map.addControl(new maplibregl.ScaleControl({ unit: 'imperial' }), 'bottom-left')
-    map.dragRotate.disable()
-
-    map.jumpTo({ center: tampaCenter, zoom: 8, pitch: 0, bearing: 0 })
-
-    const handleLoad = () => {
-      setIsLoading(false)
-
-      map.flyTo({
-        center: tampaCenter,
-        zoom: 11,
-        pitch: 0,
-        bearing: 0,
-        duration: 2000,
-        essential: true,
-      })
-
-      setTimeout(() => {
-        map.resize()
-      }, 100)
+    async function loadData() {
+      const { data, error } = await supabase.rpc('get_parcels_geojson')
+      if (!error) setParcels(data)
+      setLoading(false)
     }
+    loadData()
+  }, [])
 
-    map.on('load', handleLoad)
-
+  // 2. Tarik's Transition Logic: Handles the "Fly In" from the Home Page
+  useEffect(() => {
     const handleTransitionShow = (event) => {
-      if (event.detail?.mapId && event.detail.mapId !== mapId) {
-        return
-      }
-
-      if (mapInstanceRef.current) {
-        requestAnimationFrame(() => {
-          mapInstanceRef.current?.resize()
-        })
+      if (event.detail?.mapId && event.detail.mapId !== mapId) return
+      if (mapRef.current) {
+        mapRef.current.getMap().resize()
       }
     }
-
     window.addEventListener('map-transition-show', handleTransitionShow)
-
-    let activeMarker = null
-
-    map.on('click', (event) => {
-      const { lng, lat } = event.lngLat
-      console.log('Clicked coordinates:', { lng, lat })
-
-      if (activeMarker) {
-        activeMarker.remove()
-      }
-
-      const markerElement = document.createElement('div')
-      markerElement.className = 'map-marker'
-      markerElement.innerHTML = '<span class="map-marker-core"></span><span class="map-marker-pulse"></span>'
-
-      activeMarker = new maplibregl.Marker({ element: markerElement, anchor: 'center' })
-        .setLngLat([lng, lat])
-        .addTo(map)
-    })
-
-    return () => {
-      map.off('load', handleLoad)
-      window.removeEventListener('map-transition-show', handleTransitionShow)
-      map.remove()
-      mapInstanceRef.current = null
-    }
+    return () => window.removeEventListener('map-transition-show', handleTransitionShow)
   }, [mapId])
+
+  const layers = [
+    new GeoJsonLayer({
+      id: 'parcels-layer',
+      data: parcels,
+      pickable: true,
+      stroked: true,
+      filled: true,
+      lineWidthMinPixels: 1,
+      getFillColor: [31, 192, 216, 100], // NovaBay Cyan
+      getLineColor: [255, 255, 255, 150],
+      onClick: (info) => {
+        if (info.object) {
+          console.log('Parcel Data:', info.object.properties)
+          // This folio is what Tarik's AI logic will use later
+        }
+      }
+    })
+  ]
 
   return (
     <div className="map-view">
-      {isLoading && <div className="map-loading">Loading map...</div>}
-      <div id={mapId} className="map-surface" />
-      <div className="map-hint">Click to drop a pin · Scroll to zoom</div>
+      {loading && <div className="map-loading">Querying 30,000 Parcels...</div>}
+      
+      <DeckGL
+        initialViewState={INITIAL_VIEW_STATE}
+        controller={true}
+        layers={layers}
+        getCursor={({isHovering}) => isHovering ? 'pointer' : 'grab'}
+      >
+        <Map 
+          ref={mapRef}
+          mapStyle="https://tiles.stadiamaps.com/styles/alidade_smooth_dark.json" 
+          attributionControl={false}
+        >
+          {/* Tarik's UI Controls */}
+          <NavigationControl position="bottom-right" />
+          <GeolocateControl position="bottom-right" />
+          <ScaleControl position="bottom-left" />
+        </Map>
+      </DeckGL>
+
+      <div className="map-hint">Click a parcel to analyze resilience</div>
     </div>
   )
 }
