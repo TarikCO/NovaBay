@@ -30,3 +30,11 @@ dist/
 # Supabase Local Secrets
 .env.local
 supabase/.env.local
+
+# Local env files
+.env
+.env.*.local
+
+# Catch-all for nested directories (like your frontend folder)
+**/.env
+**/.env.local

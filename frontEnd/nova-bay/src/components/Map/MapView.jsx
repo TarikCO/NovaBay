@@ -54,7 +54,7 @@ function MapView({ mapId = 'risk-map', onParcelSelect }) {
     // FLOOD ZONE ADDITION: The risk polygons layer (placed first so it's beneath parcels)
     new GeoJsonLayer({
       id: 'flood-zones-layer',
-      data: floodZones,
+      data: floodZones || { type: 'FeatureCollection', features: [] }, // Fallback to empty
       filled: true,
       getFillColor: (f) => f.properties.zone_name === 'X' 
         ? [46, 204, 113, 80] // Green-ish for moderate risk (Zone X)
@@ -64,7 +64,7 @@ function MapView({ mapId = 'risk-map', onParcelSelect }) {
 
     new GeoJsonLayer({
       id: 'parcels-layer',
-      data: parcels,
+      data: parcels || { type: 'FeatureCollection', features: [] }, // Fallback to empty
       pickable: true,
       stroked: true,
       filled: true,
