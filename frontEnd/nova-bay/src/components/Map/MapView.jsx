@@ -73,7 +73,8 @@ function MapView({ mapId = 'risk-map', onParcelSelect }) {
       getLineColor: [255, 255, 255, 150],
       onClick: (info) => {
         if (info.object) {
-          console.log('Parcel Data:', info.object.properties)
+          const props = info.object.properties;
+          console.log('Parcel Data:', info.object.properties);
           // NEW: Triggers the sidebar update in Analyze.jsx
           if (onParcelSelect) onParcelSelect(info.object.properties)
         }
