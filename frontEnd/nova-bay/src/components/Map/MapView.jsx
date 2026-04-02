@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from 'react'
+import { useEffect, useState, useRef, useMemo} from 'react'
 import DeckGL from '@deck.gl/react'
 import { GeoJsonLayer } from '@deck.gl/layers'
 import { Map, NavigationControl, GeolocateControl, ScaleControl } from 'react-map-gl/maplibre'
@@ -50,7 +50,7 @@ function MapView({ mapId = 'risk-map', onParcelSelect }) {
     return () => window.removeEventListener('map-transition-show', handleTransitionShow)
   }, [mapId])
 
-  const layers = [
+  const layers = useMemo(() => [
     // FLOOD ZONE ADDITION: The risk polygons layer (placed first so it's beneath parcels)
     new GeoJsonLayer({
       id: 'flood-zones-layer',
@@ -76,11 +76,17 @@ function MapView({ mapId = 'risk-map', onParcelSelect }) {
           const props = info.object.properties;
           console.log('Parcel Data:', info.object.properties);
           // NEW: Triggers the sidebar update in Analyze.jsx
-          if (onParcelSelect) onParcelSelect(info.object.properties)
+          if (typeof onParcelSelect === 'function') {
+            setTimeout(() => {
+              onParcelSelect(info.object.properties);
+            }, 0);
+          } else {
+            console.warn('onParcelSelect prop is missing or not a function!');
+          }
         }
       }
     })
-  ]
+  ], [parcels, floodZones, onParcelSelect]);
 
   return (
     <div className="map-view">

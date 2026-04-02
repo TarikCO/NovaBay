@@ -1,44 +1,49 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import MapView from '../components/Map/MapView'
 import RiskMapSidebar from '../components/RiskMap/RiskMapSidebar'
-import { supabase } from '../supabaseClient' // Ensure this path is correct
+import { supabase } from '../supabaseClient'
 import './Analyze.css'
 
 function Analyze() {
   const [selectedParcel, setSelectedParcel] = useState(null)
-  const [report, setReport] = useState(null) // NEW: Holds AI text
-  const [isAnalyzing, setIsAnalyzing] = useState(false) // NEW: Loading state
+  const [report, setReport] = useState(null)
+  const [isAnalyzing, setIsAnalyzing] = useState(false)
+  const [error, setError] = useState(null) // NEW: Error state
   const navigate = useNavigate()
 
-  // Reset the report whenever a user clicks a new property
+  const onParcelSelect = useCallback((parcelProps) => {
+  setSelectedParcel(parcelProps)
+}, [])
+
+  // Reset states when a new property is clicked
   useEffect(() => {
     setReport(null)
+    setError(null)
   }, [selectedParcel])
 
-  useEffect(() => {
-    const resizeTimer = setTimeout(() => {
-      window.dispatchEvent(new Event('resize'))
-    }, 100)
-    return () => clearTimeout(resizeTimer)
-  }, [])
-
-  // NEW: Function to trigger the Anthropic AI Agent
   const handleAIAnalysis = async () => {
-    if (!selectedParcel) return
+    if (!selectedParcel?.folio) return
     
     setIsAnalyzing(true)
+    setError(null)
+    
     try {
-      const { data, error } = await supabase.functions.invoke('resilience-agent', {
+      const { data, error: invokeError } = await supabase.functions.invoke('resilience-agent', {
         body: { folio: selectedParcel.folio }
       })
 
-      if (error) throw error
+      if (invokeError) throw invokeError
       
-      // Anthropic API returns content in an array format
-      setReport(data.content[0].text)
+      // Anthropic returns the text inside a content array
+      if (data?.content && data.content[0]) {
+        setReport(data.content[0].text)
+      } else {
+        throw new Error("Invalid AI response format")
+      }
     } catch (err) {
       console.error("AI Analysis failed:", err)
+      setError("The AI agent is currently unavailable. Please try again in a moment.")
     } finally {
       setIsAnalyzing(false)
     }
@@ -62,17 +67,17 @@ function Analyze() {
         </div>
       </header>
 
-      {/* Passing the new AI states and trigger function as props */}
       <RiskMapSidebar 
         selectedParcel={selectedParcel} 
         report={report}
         isAnalyzing={isAnalyzing}
         onAnalyzeClick={handleAIAnalysis}
+        error={error} // Passing error to sidebar
       />
 
       <div className="analyze-main">
         <main className="analyze-map-area">
-          <MapView onParcelSelect={setSelectedParcel} />
+          <MapView onParcelSelect={onParcelSelect} />
         </main>
       </div>
     </div>

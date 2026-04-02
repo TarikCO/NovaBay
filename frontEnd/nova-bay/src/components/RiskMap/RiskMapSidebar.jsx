@@ -1,6 +1,6 @@
 import React from 'react'
 
-function RiskMapSidebar({ selectedParcel, report, isAnalyzing, onAnalyzeClick }) {
+function RiskMapSidebar({ selectedParcel, report, isAnalyzing, onAnalyzeClick, error }) {
   return (
     <aside className="analyze-sidebar">
       {/* LOCATION SECTION */}
@@ -18,6 +18,8 @@ function RiskMapSidebar({ selectedParcel, report, isAnalyzing, onAnalyzeClick })
             <div className="stats-row">
               <div className="stat"><span>Year:</span> {selectedParcel.year_built}</div>
               <div className="stat"><span>Stories:</span> {selectedParcel.stories}</div>
+              <div className="stat"><span>Flood Zone:</span> {selectedParcel.flood_zone || 'Calculating...'}</div>
+              <div className="stat"><span>Risk:</span> {selectedParcel.risk_level || 'Unknown'}</div>
             </div>
           </div>
         )}
@@ -26,6 +28,11 @@ function RiskMapSidebar({ selectedParcel, report, isAnalyzing, onAnalyzeClick })
       {/* MATERIALS & ANALYSIS SECTION */}
       <section className="sidebar-section">
         <h2 className="section-label">RESILIENCE ANALYSIS</h2>
+        {error && (
+          <div className="error-message" style={{ color: '#ff6b6b', fontSize: '0.8rem', marginBottom: '10px' }}>
+            {error}
+          </div>
+        )}
         {!selectedParcel ? (
           <div className="placeholder-card placeholder-waiting">
             <span className="placeholder-icon icon-analysis">◈</span>
